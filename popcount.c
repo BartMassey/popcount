@@ -65,7 +65,7 @@ popcount_2(uint32_t n)
     n = (n & m3) + ((n >> 4) & m3);
     n = (n & m4) + ((n >> 8) & m4);
     n += n >> 16;
-    return n & 0x1f;
+    return n & 0x3f;
 }
 
 
@@ -81,7 +81,7 @@ popcount_3(uint32_t n)
     n += n >> 6;
     n += n >> 12;
     n += n >> 24;
-    return n & 0x1f;
+    return n & 0x3f;
 }
 
 
