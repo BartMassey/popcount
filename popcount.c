@@ -86,19 +86,6 @@ remu63(uint32_t n) {
 }
 
 
-/* HAKMEM 169 with Keane modulus */
-/* 9 + 12 = 21 ops, 2 long immediates, 14 stages */
-static inline uint32_t
-popcount_keane(uint32_t mask)
-{
-    uint32_t y;
-
-    y = (mask >> 1) & 033333333333;
-    y = mask - y - ((y >>1) & 033333333333);
-    return remu63((y + (y >> 3)) & 030707070707);
-}
-
-
 /* Single mask binary divide-and-conquer. */
 /* 23 ops, 1 long immediate, 20 stages */
 static inline uint32_t
@@ -114,6 +101,19 @@ popcount_2(uint32_t n)
     n = (n & m4) + ((n >> 8) & m4);
     n += n >> 16;
     return n & 0x3f;
+}
+
+
+/* HAKMEM 169 with Keane modulus */
+/* 9 + 12 = 21 ops, 2 long immediates, 14 stages */
+static inline uint32_t
+popcount_keane(uint32_t mask)
+{
+    uint32_t y;
+
+    y = (mask >> 1) & 033333333333;
+    y = mask - y - ((y >>1) & 033333333333);
+    return remu63((y + (y >> 3)) & 030707070707);
 }
 
 
@@ -177,22 +177,22 @@ drive_hakmem(int n) {
 }
 
 uint32_t
-drive_keane(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_keane(randoms[i]);
-    return result;
-}
-
-uint32_t
 drive_2(int n) {
     int i, j;
     uint32_t result = 0;
     for (j = 0; j < n; j++)
 	for (i = 0; i < BLOCKSIZE; i++)
 	    result += popcount_2(randoms[i]);
+    return result;
+}
+
+uint32_t
+drive_keane(int n) {
+    int i, j;
+    uint32_t result = 0;
+    for (j = 0; j < n; j++)
+	for (i = 0; i < BLOCKSIZE; i++)
+	    result += popcount_keane(randoms[i]);
     return result;
 }
 
@@ -291,8 +291,8 @@ struct drivers drivers[] = {
     {"popcount_8", popcount_8, drive_8},
     {"popcount_6", popcount_6, drive_6},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem},
-    {"popcount_keane", popcount_keane, drive_keane},
     {"popcount_2", popcount_2, drive_2},
+    {"popcount_keane", popcount_keane, drive_keane},
     {"popcount_3", popcount_3, drive_3},
     {0, 0, 0}
 };
