@@ -63,7 +63,7 @@ popcount_6(uint32_t n) {
 
 
 /* HAKMEM 169 */
-/* 9 ops plus divide, 2 long immediates, 8 stages */
+/* 9 ops plus divide, 2 long immediates, 9 stages */
 static inline uint32_t
 popcount_hakmem(uint32_t mask)
 {
@@ -72,17 +72,6 @@ popcount_hakmem(uint32_t mask)
     y = (mask >> 1) & 033333333333;
     y = mask - y - ((y >>1) & 033333333333);
     return ((y + (y >> 3)) & 030707070707) % 63;
-}
-
-
-/* Joe Keane, sci.math.num-analysis, 9 July 1995,
-   as cited by an errata to Hacker's Delight.
-   http://www.hackersdelight.org/divcMore.pdf */
-static inline uint32_t
-remu63(uint32_t n) {
-    uint32_t t = (((n >> 12) + n) >> 10) + (n << 2);
-    t = ((t >> 6) + t + 3) & 0xff;
-    return (t - (t >> 6)) >> 2;
 }
 
 
@@ -104,6 +93,16 @@ popcount_2(uint32_t n)
 }
 
 
+/* Joe Keane, sci.math.num-analysis, 9 July 1995,
+   as cited by an errata to Hacker's Delight.
+   http://www.hackersdelight.org/divcMore.pdf */
+static inline uint32_t
+remu63(uint32_t n) {
+    uint32_t t = (((n >> 12) + n) >> 10) + (n << 2);
+    t = ((t >> 6) + t + 3) & 0xff;
+    return (t - (t >> 6)) >> 2;
+}
+
 /* HAKMEM 169 with Keane modulus */
 /* 9 + 12 = 21 ops, 2 long immediates, 14 stages */
 static inline uint32_t
@@ -117,7 +116,7 @@ popcount_keane(uint32_t mask)
 }
 
 
-/* Try starting with a ternary stage for parallelism */
+/* Try starting with a ternary stage to reduce masking */
 /* 21 ops, 2 long immediates, 14 stages */
 static inline uint32_t
 popcount_3(uint32_t n)
