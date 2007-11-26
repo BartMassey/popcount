@@ -14,6 +14,21 @@
 #include <time.h>
 
 
+/* Baseline */
+/* 96 ops, 32 stages */
+static inline uint32_t
+popcount_naive(uint32_t n) {
+    int c = 0;
+    int i;
+    for (i = 0; i < 32; i++) {
+	c += n & 1;
+	n >>= 1;
+    }
+    return c;
+}
+
+
+
 /* HAKMEM 169 */
 /* 9 ops plus divide, 2 long immediates, 8 stages */
 static inline uint32_t
@@ -87,6 +102,16 @@ popcount_3(uint32_t n)
 
 #define BLOCKSIZE 2048
 uint32_t randoms[BLOCKSIZE];
+
+uint32_t
+drive_naive(int n) {
+    int i, j;
+    uint32_t result = 0;
+    for (j = 0; j < n; j++)
+	for (i = 0; i < BLOCKSIZE; i++)
+	    result += popcount_naive(randoms[i]);
+    return result;
+}
 
 uint32_t
 drive_hakmem(int n) {
@@ -209,6 +234,7 @@ run_driver(struct drivers *d, int n) {
 }
 
 struct drivers drivers[] = {
+    {"popcount_naive", popcount_naive, drive_naive},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem},
     {"popcount_keane", popcount_keane, drive_keane},
     {"popcount_2", popcount_2, drive_2},
