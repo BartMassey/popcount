@@ -128,9 +128,11 @@ drive_3(int n) {
     return result;
 }
 
+
 struct drivers {
     char *name;
-    uint32_t (*func)(int);
+    uint32_t (*f)(uint32_t);
+    uint32_t (*blockf)(int);
 };
 
 void
@@ -152,13 +154,54 @@ elapsed_msecs(struct timeval *start,
 }
 
 
+struct testcases {
+    uint32_t input, output;
+};
+
+struct testcases testcases[] = {
+    {0x00000080, 1},
+    {0x000000f0, 4},
+    {0x00008000, 1},
+    {0x0000f000, 4},
+    {0x00800000, 1},
+    {0x00f00000, 4},
+    {0x80000000, 1},
+    {0xf0000000, 4},
+    {0xff000000, 8},
+    {0x000000ff, 8},
+    {0x01fe0000, 8},
+    {0xea9031e8, 14},
+    {0x2e8eb2b2, 16},
+    {0x9b8be5b7, 20},
+    {~0, 32},
+    {0, 0}
+};
+
+void
+test_driver(struct drivers *d, int n) {
+    struct testcases *t;
+    int nt = 1;
+    uint32_t last = 1;
+    for (t = testcases; last != 0; t++) {
+	uint32_t output = (d->f)(t->input);
+	if (output != t->output) {
+	    printf("%s failed case %d: %x -> %u != %u: abandoning\n",
+		   d->name, nt, t->input, output, t->output);
+	    d->blockf = 0;
+	    return;
+	}
+	last = t->input;
+	nt++;
+    }
+}
+
 void
 run_driver(struct drivers *d, int n) {
     struct timeval start, end;
     uint32_t result, elapsed;
-    printf("preheating %s (%d)\n", d->name, d->func(10));
+    printf("preheating %s (%d)\n", d->name, d->blockf(10));
     assert(gettimeofday(&start, 0) != -1);
-    result = d->func(n);
+    result = d->blockf(n);
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
     printf("timed %s at %d msecs for %g nsecs/iter (%d)\n",
@@ -166,18 +209,21 @@ run_driver(struct drivers *d, int n) {
 }
 
 struct drivers drivers[] = {
-    {"popcount_hakmem", drive_hakmem},
-    {"popcount_keane", drive_keane},
-    {"popcount_2", drive_2},
-    {"popcount_3", drive_3},
-    {0, 0}
+    {"popcount_hakmem", popcount_hakmem, drive_hakmem},
+    {"popcount_keane", popcount_keane, drive_keane},
+    {"popcount_2", popcount_2, drive_2},
+    {"popcount_3", popcount_3, drive_3},
+    {0, 0, 0}
 };
 
 void
 run_all(int n) {
     struct drivers *d;
     for (d = drivers; d->name; d++)
-	run_driver(d, n);
+	test_driver(d, n);
+    for (d = drivers; d->name; d++)
+	if (d->blockf)
+	    run_driver(d, n);
 }
 
 int
