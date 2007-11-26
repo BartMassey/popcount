@@ -117,7 +117,7 @@ popcount_keane(uint32_t mask)
 
 
 /* Try starting with a ternary stage to reduce masking */
-/* 21 ops, 2 long immediates, 14 stages */
+/* 18 ops, 2 long immediates, 16 stages */
 static inline uint32_t
 popcount_3(uint32_t n)
 {
@@ -125,21 +125,6 @@ popcount_3(uint32_t n)
     uint32_t m2 = 030707070707;
     n = (n & m1) + ((n >> 1) & m1) + ((n >> 2) & m1);
     n = (n & m2) + ((n >> 3) & m2);
-    n += n >> 6;
-    n += n >> 12;
-    n += n >> 24;
-    return n & 0x3f;
-}
-
-
-/* If three is good, six is better */
-/* 21 ops, 1 long immediate, 12 stages */
-static inline uint32_t
-popcount_6b(uint32_t n)
-{
-    uint32_t m = 0x41041041;
-    n = (n        & m) + ((n >> 1) & m) + ((n >> 2) & m) +
-        ((n >> 3) & m) + ((n >> 4) & m) + ((n >> 5) & m);
     n += n >> 6;
     n += n >> 12;
     n += n >> 24;
@@ -217,17 +202,6 @@ drive_3(int n) {
     for (j = 0; j < n; j++)
 	for (i = 0; i < BLOCKSIZE; i++)
 	    result += popcount_3(randoms[i]);
-    return result;
-}
-
-
-uint32_t
-drive_6b(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_6b(randoms[i]);
     return result;
 }
 
@@ -319,7 +293,6 @@ struct drivers drivers[] = {
     {"popcount_2", popcount_2, drive_2},
     {"popcount_keane", popcount_keane, drive_keane},
     {"popcount_3", popcount_3, drive_3},
-    {"popcount_6b", popcount_6b, drive_6b},
     {0, 0, 0}
 };
 
