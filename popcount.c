@@ -13,6 +13,25 @@
 #include <sys/time.h>
 #include <time.h>
 
+/* A block of random values for popcount to
+   repeatedly operate on. */
+#define BLOCKSIZE 2048
+uint32_t randoms[BLOCKSIZE];
+
+/* XXX Because the popcount routine wants to be inlined
+   in the loop, we need to expand each popcount routine
+   in its own driver. */
+#define DRIVER(NAME) \
+  uint32_t                                          \
+  drive_##NAME(int n) {                             \
+    int i, j;                                       \
+    uint32_t result = 0;                            \
+    for (j = 0; j < n; j++)                         \
+	for (i = 0; i < BLOCKSIZE; i++)             \
+	    result += popcount_##NAME(randoms[i]);  \
+    return result;   \
+  }
+
 
 /* Baseline */
 /* 96 ops, 64 stages */
@@ -25,6 +44,7 @@ popcount_naive(uint32_t n) {
     }
     return c;
 }
+DRIVER(naive)
 
 
 /* bit-parallelism */
@@ -42,6 +62,7 @@ popcount_8(uint32_t n) {
     c += c >> 16;
     return c & 0x3f;
 }
+DRIVER(8)
 
 
 /* more bit-parallelism */
@@ -60,6 +81,7 @@ popcount_6(uint32_t n) {
     c += c >> 24;
     return c & 0x3f;
 }
+DRIVER(6)
 
 
 /* HAKMEM 169 */
@@ -73,6 +95,7 @@ popcount_hakmem(uint32_t mask)
     y = mask - y - ((y >>1) & 033333333333);
     return ((y + (y >> 3)) & 030707070707) % 63;
 }
+DRIVER(hakmem)
 
 
 /* Single mask binary divide-and-conquer. */
@@ -91,6 +114,7 @@ popcount_2(uint32_t n)
     n += n >> 16;
     return n & 0x3f;
 }
+DRIVER(2)
 
 
 /* Joe Keane, sci.math.num-analysis, 9 July 1995,
@@ -114,6 +138,7 @@ popcount_keane(uint32_t mask)
     y = mask - y - ((y >>1) & 033333333333);
     return remu63((y + (y >> 3)) & 030707070707);
 }
+DRIVER(keane)
 
 
 /* Try starting with a ternary stage to reduce masking */
@@ -130,80 +155,7 @@ popcount_3(uint32_t n)
     n += n >> 24;
     return n & 0x3f;
 }
-
-
-#define BLOCKSIZE 2048
-uint32_t randoms[BLOCKSIZE];
-
-uint32_t
-drive_naive(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_naive(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_8(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_8(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_6(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_6(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_hakmem(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_hakmem(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_2(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_2(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_keane(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_keane(randoms[i]);
-    return result;
-}
-
-uint32_t
-drive_3(int n) {
-    int i, j;
-    uint32_t result = 0;
-    for (j = 0; j < n; j++)
-	for (i = 0; i < BLOCKSIZE; i++)
-	    result += popcount_3(randoms[i]);
-    return result;
-}
+DRIVER(3)
 
 
 struct drivers {
@@ -211,6 +163,18 @@ struct drivers {
     uint32_t (*f)(uint32_t);
     uint32_t (*blockf)(int);
 };
+
+struct drivers drivers[] = {
+    {"popcount_naive", popcount_naive, drive_naive},
+    {"popcount_8", popcount_8, drive_8},
+    {"popcount_6", popcount_6, drive_6},
+    {"popcount_hakmem", popcount_hakmem, drive_hakmem},
+    {"popcount_2", popcount_2, drive_2},
+    {"popcount_keane", popcount_keane, drive_keane},
+    {"popcount_3", popcount_3, drive_3},
+    {0, 0, 0}
+};
+
 
 void
 init_randoms() {
@@ -254,6 +218,7 @@ struct testcases testcases[] = {
     {0, 0}
 };
 
+
 void
 test_driver(struct drivers *d, int n) {
     struct testcases *t;
@@ -272,6 +237,7 @@ test_driver(struct drivers *d, int n) {
     }
 }
 
+
 void
 run_driver(struct drivers *d, int n) {
     struct timeval start, end;
@@ -285,16 +251,6 @@ run_driver(struct drivers *d, int n) {
 	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n, result);
 }
 
-struct drivers drivers[] = {
-    {"popcount_naive", popcount_naive, drive_naive},
-    {"popcount_8", popcount_8, drive_8},
-    {"popcount_6", popcount_6, drive_6},
-    {"popcount_hakmem", popcount_hakmem, drive_hakmem},
-    {"popcount_2", popcount_2, drive_2},
-    {"popcount_keane", popcount_keane, drive_keane},
-    {"popcount_3", popcount_3, drive_3},
-    {0, 0, 0}
-};
 
 void
 run_all(int n) {
@@ -305,6 +261,7 @@ run_all(int n) {
 	if (d->blockf)
 	    run_driver(d, n);
 }
+
 
 int
 main(int argc,
