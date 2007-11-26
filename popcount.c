@@ -230,7 +230,7 @@ run_driver(struct drivers *d, int n) {
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
     printf("timed %s at %d msecs for %g nsecs/iter (%d)\n",
-	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE * n, result);
+	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n, result);
 }
 
 struct drivers drivers[] = {
