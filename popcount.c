@@ -15,18 +15,51 @@
 
 
 /* Baseline */
-/* 96 ops, 32 stages */
+/* 96 ops, 64 stages */
 static inline uint32_t
 popcount_naive(uint32_t n) {
-    int c = 0;
-    int i;
-    for (i = 0; i < 32; i++) {
+    uint32_t c = 0;
+    while (n) {
 	c += n & 1;
 	n >>= 1;
     }
     return c;
 }
 
+
+/* bit-parallelism */
+/* 27 ops, 1 long immediate, 20 stages */
+static inline uint32_t
+popcount_8(uint32_t n) {
+    uint32_t m = 0x01010101;
+    uint32_t c = n & m;
+    int i;
+    for (i = 0; i < 7; i++) {
+	n >>= 1;
+	c += n & m;
+    }
+    c += c >> 8;
+    c += c >> 16;
+    return c & 0x3f;
+}
+
+
+/* more bit-parallelism */
+/* 23 ops, 1 long immediate, 18 stages */
+static inline uint32_t
+popcount_6(uint32_t n) {
+    uint32_t m = 0x41041041;
+    uint32_t c = n & m;
+    int i;
+    for (i = 0; i < 5; i++) {
+	n >>= 1;
+	c += n & m;
+    }
+    c += c >> 6;
+    c += c >> 12;
+    c += c >> 24;
+    return c & 0x3f;
+}
 
 
 /* HAKMEM 169 */
@@ -110,6 +143,26 @@ drive_naive(int n) {
     for (j = 0; j < n; j++)
 	for (i = 0; i < BLOCKSIZE; i++)
 	    result += popcount_naive(randoms[i]);
+    return result;
+}
+
+uint32_t
+drive_8(int n) {
+    int i, j;
+    uint32_t result = 0;
+    for (j = 0; j < n; j++)
+	for (i = 0; i < BLOCKSIZE; i++)
+	    result += popcount_8(randoms[i]);
+    return result;
+}
+
+uint32_t
+drive_6(int n) {
+    int i, j;
+    uint32_t result = 0;
+    for (j = 0; j < n; j++)
+	for (i = 0; i < BLOCKSIZE; i++)
+	    result += popcount_6(randoms[i]);
     return result;
 }
 
@@ -224,7 +277,7 @@ void
 run_driver(struct drivers *d, int n) {
     struct timeval start, end;
     uint32_t result, elapsed;
-    printf("preheating %s (%d)\n", d->name, d->blockf(10));
+    printf("preheating %s (%d)\n", d->name, d->blockf(1000));
     assert(gettimeofday(&start, 0) != -1);
     result = d->blockf(n);
     assert(gettimeofday(&end, 0) != -1);
@@ -235,6 +288,8 @@ run_driver(struct drivers *d, int n) {
 
 struct drivers drivers[] = {
     {"popcount_naive", popcount_naive, drive_naive},
+    {"popcount_8", popcount_8, drive_8},
+    {"popcount_6", popcount_6, drive_6},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem},
     {"popcount_keane", popcount_keane, drive_keane},
     {"popcount_2", popcount_2, drive_2},
