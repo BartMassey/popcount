@@ -181,9 +181,9 @@ struct drivers {
 };
 
 struct drivers drivers[] = {
-    {"popcount_naive", popcount_naive, drive_naive, 50},
-    {"popcount_8", popcount_8, drive_8, 10},
-    {"popcount_6", popcount_6, drive_6, 1},
+    {"popcount_naive", popcount_naive, drive_naive, 10},
+    {"popcount_8", popcount_8, drive_8, 2},
+    {"popcount_6", popcount_6, drive_6, 2},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem, 1},
     {"popcount_2", popcount_2, drive_2, 1},
     {"popcount_keane", popcount_keane, drive_keane, 1},
@@ -267,10 +267,9 @@ run_driver(struct drivers *d, int n) {
     result += d->blockf(real_n);
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
-    elapsed *= d->divisor;
     printf("%s: %d iters in %d msecs for %g nsecs/iter\n",
-	   d->name, real_n * BLOCKSIZE,
-	   elapsed, elapsed * 1.0e6 / BLOCKSIZE / n);
+	   d->name, real_n * BLOCKSIZE, elapsed,
+	   elapsed * d->divisor * 1.0e6 / BLOCKSIZE / n);
 }
 
 
