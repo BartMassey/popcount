@@ -118,7 +118,7 @@ DRIVER(2)
 
 
 /* Joe Keane, sci.math.num-analysis, 9 July 1995,
-   as cited by an errata to Hacker's Delight.
+   as cited by an addendum to Hacker's Delight.
    http://www.hackersdelight.org/divcMore.pdf */
 static inline uint32_t
 remu63(uint32_t n) {
@@ -158,20 +158,37 @@ popcount_3(uint32_t n)
 DRIVER(3)
 
 
+/* The end case can be cleaned up a bit. */
+/* 18 ops, 2 long immediates, 12 stages */
+static inline uint32_t
+popcount_3b(uint32_t n)
+{
+    uint32_t m1 = 011111111111;
+    uint32_t m2 = 030707070707;
+    n = (n & m1) + ((n >> 1) & m1) + ((n >> 2) & m1);
+    n = (n & m2) + ((n >> 3) & m2);
+    n += n >> 6;
+    return  (n + (n >> 12) + (n >> 24)) & 0x3f;
+}
+DRIVER(3b)
+
+
 struct drivers {
     char *name;
     uint32_t (*f)(uint32_t);
     uint32_t (*blockf)(int);
+    uint32_t divisor;
 };
 
 struct drivers drivers[] = {
-    {"popcount_naive", popcount_naive, drive_naive},
-    {"popcount_8", popcount_8, drive_8},
-    {"popcount_6", popcount_6, drive_6},
-    {"popcount_hakmem", popcount_hakmem, drive_hakmem},
-    {"popcount_2", popcount_2, drive_2},
-    {"popcount_keane", popcount_keane, drive_keane},
-    {"popcount_3", popcount_3, drive_3},
+    {"popcount_naive", popcount_naive, drive_naive, 50},
+    {"popcount_8", popcount_8, drive_8, 10},
+    {"popcount_6", popcount_6, drive_6, 1},
+    {"popcount_hakmem", popcount_hakmem, drive_hakmem, 1},
+    {"popcount_2", popcount_2, drive_2, 1},
+    {"popcount_keane", popcount_keane, drive_keane, 1},
+    {"popcount_3", popcount_3, drive_3, 1},
+    {"popcount_3b", popcount_3b, drive_3b, 1},
     {0, 0, 0}
 };
 
@@ -242,11 +259,13 @@ void
 run_driver(struct drivers *d, int n) {
     struct timeval start, end;
     uint32_t result, elapsed;
+    uint32_t real_n = n / d->divisor;
     printf("preheating %s (%d)\n", d->name, d->blockf(1000));
     assert(gettimeofday(&start, 0) != -1);
     result = d->blockf(n);
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
+    elapsed *= d->divisor;
     printf("timed %s at %d msecs for %g nsecs/iter (%d)\n",
 	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n, result);
 }
