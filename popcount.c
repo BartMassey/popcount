@@ -257,17 +257,19 @@ test_driver(struct drivers *d, int n) {
 
 void
 run_driver(struct drivers *d, int n) {
+    volatile uint32_t result = 0;
     struct timeval start, end;
-    uint32_t result, elapsed;
+    uint32_t elapsed;
     uint32_t real_n = n / d->divisor;
-    printf("preheating %s (%d)\n", d->name, d->blockf(1000));
+    printf("preheating %s\n", d->name);
+    result += d->blockf(5000 / d->divisor);
     assert(gettimeofday(&start, 0) != -1);
-    result = d->blockf(n);
+    result += d->blockf(real_n);
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
     elapsed *= d->divisor;
-    printf("timed %s at %d msecs for %g nsecs/iter (%d)\n",
-	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n, result);
+    printf("timed %s at %d msecs for %g nsecs/iter\n",
+	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n);
 }
 
 
