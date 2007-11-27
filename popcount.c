@@ -15,7 +15,7 @@
 
 /* A block of random values for popcount to
    repeatedly operate on. */
-#define BLOCKSIZE 2048
+#define BLOCKSIZE 1000
 uint32_t randoms[BLOCKSIZE];
 
 /* XXX Because the popcount routine wants to be inlined
@@ -261,15 +261,16 @@ run_driver(struct drivers *d, int n) {
     struct timeval start, end;
     uint32_t elapsed;
     uint32_t real_n = n / d->divisor;
-    printf("preheating %s\n", d->name);
+    /* preheat */
     result += d->blockf(5000 / d->divisor);
     assert(gettimeofday(&start, 0) != -1);
     result += d->blockf(real_n);
     assert(gettimeofday(&end, 0) != -1);
     elapsed = elapsed_msecs(&start, &end);
     elapsed *= d->divisor;
-    printf("timed %s at %d msecs for %g nsecs/iter\n",
-	   d->name, elapsed, elapsed * 1.0e6 / BLOCKSIZE / n);
+    printf("%s: %d iters in %d msecs for %g nsecs/iter\n",
+	   d->name, real_n * BLOCKSIZE,
+	   elapsed, elapsed * 1.0e6 / BLOCKSIZE / n);
 }
 
 
