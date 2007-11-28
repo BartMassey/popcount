@@ -137,6 +137,22 @@ DRIVER(keane)
 DRIVER(3)
 
 
+/* Divide-and-conquer with a quaternary stage to reduce masking
+   and provide mostly power-of-two shifts */
+/* 18 ops, 2 long immediates, 12 stages */
+static inline uint32_t
+popcount_4(uint32_t x)
+{
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0x03030303;
+    x -= (x >> 1) & m1;
+    x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2) + ((x >> 6) & m2);
+    x += x >> 8;
+    return  (x + (x >> 16)) & 0x3f;
+}
+DRIVER(4)
+
+
     /* Classic binary divide-and-conquer popcount.
        This is popcount_2() from
        http://en.wikipedia.org/wiki/Hamming_weight */
@@ -189,6 +205,7 @@ struct drivers drivers[] = {
     {"popcount_hakmem", popcount_hakmem, drive_hakmem, 5},
     {"popcount_keane", popcount_keane, drive_keane, 1},
     {"popcount_3", popcount_3, drive_3, 1},
+    {"popcount_4", popcount_4, drive_4, 1},
     {"popcount_2", popcount_2, drive_2, 1},
     {"popcount_mult", popcount_mult, drive_mult, 1},
     {0, 0, 0}
