@@ -98,25 +98,6 @@ popcount_hakmem(uint32_t mask)
 DRIVER(hakmem)
 
 
-/* Single mask binary divide-and-conquer. */
-/* 23 ops, 1 long immediate, 20 stages */
-static inline uint32_t
-popcount_2(uint32_t n)
-{
-    uint32_t m4 = 0x00ff00ff;
-    uint32_t m3 = m4 ^ (m4 << 4);
-    uint32_t m2 = m3 ^ (m3 << 2);
-    uint32_t m1 = m2 ^ (m2 << 1);
-    n = (n & m1) + ((n >> 1) & m1);
-    n = (n & m2) + ((n >> 2) & m2);
-    n = (n & m3) + ((n >> 4) & m3);
-    n = (n & m4) + ((n >> 8) & m4);
-    n += n >> 16;
-    return n & 0x3f;
-}
-DRIVER(2)
-
-
 /* Joe Keane, sci.math.num-analysis, 9 July 1995,
    as cited by an addendum to Hacker's Delight.
    http://www.hackersdelight.org/divcMore.pdf */
@@ -141,36 +122,59 @@ popcount_keane(uint32_t mask)
 DRIVER(keane)
 
 
-/* Try starting with a ternary stage to reduce masking */
-/* 18 ops, 2 long immediates, 16 stages */
+/* Divide-and-conquer with a ternary stage to reduce masking */
+/* 17 ops, 2 long immediates, 12 stages */
 static inline uint32_t
-popcount_3(uint32_t n)
+popcount_3(uint32_t x)
 {
-    uint32_t m1 = 011111111111;
-    uint32_t m2 = 030707070707;
-    n = (n & m1) + ((n >> 1) & m1) + ((n >> 2) & m1);
-    n = (n & m2) + ((n >> 3) & m2);
-    n += n >> 6;
-    n += n >> 12;
-    n += n >> 24;
-    return n & 0x3f;
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0xc30c30c3;
+    x -= (x >> 1) & m1; /* put count of each 2 bits into those 2 bits */
+    /* put count of each 6 bits in */
+    x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2); 
+    x += x >> 6;  /* put count of each 12 bits in */
+    return  (x + (x >> 12) + (x >> 24)) & 0x3f;  /* add up the three groups */
 }
 DRIVER(3)
 
 
-/* The end case can be cleaned up a bit. */
-/* 18 ops, 2 long immediates, 12 stages */
+/* Classic binary divide-and-conquer popcount.
+   This is popcount_2() from
+   http://en.wikipedia.org/wiki/Hamming_weight */
+/* 15 ops, 3 long immediates, 14 stages */
 static inline uint32_t
-popcount_3b(uint32_t n)
+popcount_2(uint32_t x)
 {
-    uint32_t m1 = 011111111111;
-    uint32_t m2 = 030707070707;
-    n = (n & m1) + ((n >> 1) & m1) + ((n >> 2) & m1);
-    n = (n & m2) + ((n >> 3) & m2);
-    n += n >> 6;
-    return  (n + (n >> 12) + (n >> 24)) & 0x3f;
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0x33333333;
+    uint32_t m4 = 0x0f0f0f0f;
+    x -= (x >> 1) & m1; /* put count of each 2 bits into those 2 bits */
+    x = (x & m2) + ((x >> 2) & m2); /* put count of each 4 bits in */
+    x = (x + (x >> 4)) & m4;        /* put count of each 8 bits in */
+    x += x >>  8;  /* put count of each 16 bits in */
+    x += x >> 16;  /* put count of each 32 bits in */
+    return x & 0x3f;
 }
-DRIVER(3b)
+DRIVER(2)
+
+
+/* Popcount using multiply.
+   This is popcount_3() from
+   http://en.wikipedia.org/wiki/Hamming_weight */
+/* 11 ops plus 1 multiply, 4 long immediates, 11 stages */
+static inline uint32_t
+popcount_mult(uint32_t x)
+{
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0x33333333;
+    uint32_t m4 = 0x0f0f0f0f;
+    uint32_t h01 = 0x01010101;
+    x -= (x >> 1) & m1;   /* put count of each 2 bits into those 2 bits */
+    x = (x & m2) + ((x >> 2) & m2);   /* put count of each 4 bits in */
+    x = (x + (x >> 4)) & m4;  /* put count of each 8 bits in */
+    return (x * h01) >> 24;  /* returns left 8 bits of x + (x<<8) + ... */
+}
+DRIVER(mult)
 
 
 struct drivers {
@@ -185,10 +189,10 @@ struct drivers drivers[] = {
     {"popcount_8", popcount_8, drive_8, 10},
     {"popcount_6", popcount_6, drive_6, 5},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem, 5},
-    {"popcount_2", popcount_2, drive_2, 5},
     {"popcount_keane", popcount_keane, drive_keane, 1},
     {"popcount_3", popcount_3, drive_3, 1},
-    {"popcount_3b", popcount_3b, drive_3b, 1},
+    {"popcount_2", popcount_2, drive_2, 1},
+    {"popcount_mult", popcount_mult, drive_mult, 1},
     {0, 0, 0}
 };
 
