@@ -123,7 +123,7 @@ DRIVER(keane)
 
 
     /* Divide-and-conquer with a ternary stage to reduce masking */
-    /* 17 ops, 2 long immediates, 12 stages */
+    /* 17 ops, 2 long immediates, 12 stages, 14 alu ops, 11 alu stages  */
     static inline uint32_t
     popcount_3(uint32_t x)
     {
@@ -139,14 +139,15 @@ DRIVER(3)
 
 /* Divide-and-conquer with a quaternary stage to reduce masking
    and provide mostly power-of-two shifts */
-/* 18 ops, 2 long immediates, 12 stages, 12 alu ops, 9 alu stages */
+/* 18 ops, 2 long immediates, 12 stages, 12 alu ops, 8 alu stages */
 static inline uint32_t
 popcount_4(uint32_t x)
 {
     uint32_t m1 = 0x55555555;
     uint32_t m2 = 0x03030303;
-    x -= (x >> 1) & m1;
-    x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2) + ((x >> 6) & m2);
+    uint32_t xl = x - ((x >> 1) & m1);
+    uint32_t xr = xl >> 2;
+    x = (xl & m2) + ((xl >> 4) & m2) + (xr & m2) + ((xr >> 4) & m2);
     x += x >> 8;
     return  (x + (x >> 16)) & 0x3f;
 }
