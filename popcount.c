@@ -122,19 +122,18 @@ popcount_keane(uint32_t mask)
 DRIVER(keane)
 
 
-/* Divide-and-conquer with a ternary stage to reduce masking */
-/* 17 ops, 2 long immediates, 12 stages */
-static inline uint32_t
-popcount_3(uint32_t x)
-{
-    uint32_t m1 = 0x55555555;
-    uint32_t m2 = 0xc30c30c3;
-    x -= (x >> 1) & m1; /* put count of each 2 bits into those 2 bits */
-    /* put count of each 6 bits in */
-    x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2); 
-    x += x >> 6;  /* put count of each 12 bits in */
-    return  (x + (x >> 12) + (x >> 24)) & 0x3f;  /* add up the three groups */
-}
+    /* Divide-and-conquer with a ternary stage to reduce masking */
+    /* 17 ops, 2 long immediates, 12 stages */
+    static inline uint32_t
+    popcount_3(uint32_t x)
+    {
+	uint32_t m1 = 0x55555555;
+	uint32_t m2 = 0xc30c30c3;
+	x -= (x >> 1) & m1;
+	x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2); 
+	x += x >> 6;
+	return  (x + (x >> 12) + (x >> 24)) & 0x3f;
+    }
 DRIVER(3)
 
 
@@ -148,12 +147,11 @@ popcount_2(uint32_t x)
     uint32_t m1 = 0x55555555;
     uint32_t m2 = 0x33333333;
     uint32_t m4 = 0x0f0f0f0f;
-    x -= (x >> 1) & m1; /* put count of each 2 bits into those 2 bits */
-    x = (x & m2) + ((x >> 2) & m2); /* put count of each 4 bits in */
-    x = (x + (x >> 4)) & m4;        /* put count of each 8 bits in */
-    x += x >>  8;  /* put count of each 16 bits in */
-    x += x >> 16;  /* put count of each 32 bits in */
-    return x & 0x3f;
+    x -= (x >> 1) & m1;
+    x = (x & m2) + ((x >> 2) & m2);
+    x = (x + (x >> 4)) & m4;
+    x += x >>  8;
+    return (x + (x >> 16)) & 0x3f;
 }
 DRIVER(2)
 
