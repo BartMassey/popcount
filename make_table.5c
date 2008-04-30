@@ -1,0 +1,22 @@
+#!/usr/bin/nickle
+/*
+ * Copyright (C) 2008 Bart Massey
+ * ALL RIGHTS RESERVED
+ * 
+ * [This program is licensed under the GPL version 3 or later.]
+ * Please see the file COPYING in the source
+ * distribution of this software for license terms.
+ */
+
+
+import File;
+
+int bits = atoi(argv[1]);
+int size = 1 << bits;
+string fn = sprintf("popcount_table_%d.c", bits);
+twixt(file f = open(fn, "w"); close(f)) {
+    fprintf(f, "static char popcount_table_%d[%d] = {\n", bits, size);
+    for (int i = 0; i < size; i++)
+	fprintf(f, "  /*%d*/ %d,\n", i, popcount(i));
+    fprintf(f, "};\n");
+}
