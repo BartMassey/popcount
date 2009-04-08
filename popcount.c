@@ -22,13 +22,13 @@ uint32_t randoms[BLOCKSIZE];
    in the loop, we need to expand each popcount routine
    in its own driver. */
 #define DRIVER(NAME) \
-  uint32_t                                          \
-  drive_##NAME(int n) {                             \
-    int i, j;                                       \
-    uint32_t result = 0;                            \
-    for (j = 0; j < n; j++)                         \
-	for (i = 0; i < BLOCKSIZE; i++)             \
-	    result += popcount_##NAME(randoms[i]);  \
+  uint32_t                                                   \
+  drive_##NAME(int n) {                                      \
+    int i, j;                                                \
+    uint32_t result = 0;                                     \
+    for (j = 0; j < n; j++)                                  \
+	for (i = 0; i < BLOCKSIZE; i++)                      \
+	    result += popcount_##NAME(randoms[i] ^ result);  \
     return result;   \
   }
 
@@ -122,7 +122,7 @@ popcount_keane(uint32_t mask)
 DRIVER(keane)
 
 
-    /* HERE */
+#if 0
     /* SWAR */
     /* ops, long immediates, stages, alu ops, alu stages  */
     static inline uint32_t
@@ -130,6 +130,7 @@ DRIVER(keane)
     {
     }
 DRIVER(swar)
+#endif
 
 
     /* Divide-and-conquer with a ternary stage to reduce masking */
