@@ -122,29 +122,18 @@ popcount_keane(uint32_t mask)
 DRIVER(keane)
 
 
-#if 0
-    /* SWAR */
-    /* ops, long immediates, stages, alu ops, alu stages  */
-    static inline uint32_t
-    popcount_swar(uint32_t x)
-    {
-    }
-DRIVER(swar)
-#endif
-
-
-    /* Divide-and-conquer with a ternary stage to reduce masking */
-    /* 17 ops, 2 long immediates, 12 stages, 14 alu ops, 11 alu stages  */
-    static inline uint32_t
-    popcount_3(uint32_t x)
-    {
-	uint32_t m1 = 0x55555555;
-	uint32_t m2 = 0xc30c30c3;
-	x -= (x >> 1) & m1;
-	x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2); 
-	x += x >> 6;
-	return  (x + (x >> 12) + (x >> 24)) & 0x3f;
-    }
+/* Divide-and-conquer with a ternary stage to reduce masking */
+/* 17 ops, 2 long immediates, 12 stages, 14 alu ops, 11 alu stages  */
+static inline uint32_t
+popcount_3(uint32_t x)
+{
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0xc30c30c3;
+    x -= (x >> 1) & m1;
+    x = (x & m2) + ((x >> 2) & m2) + ((x >> 4) & m2); 
+    x += x >> 6;
+    return  (x + (x >> 12) + (x >> 24)) & 0x3f;
+}
 DRIVER(3)
 
 
@@ -297,7 +286,7 @@ struct testcases testcases[] = {
 
 
 void
-test_driver(struct drivers *d, int n) {
+test_driver(struct drivers *d) {
     struct testcases *t;
     int nt = 1;
     uint32_t last = 1;
@@ -337,7 +326,7 @@ void
 run_all(int n) {
     struct drivers *d;
     for (d = drivers; d->name; d++)
-	test_driver(d, n);
+	test_driver(d);
     for (d = drivers; d->name; d++)
 	if (d->blockf)
 	    run_driver(d, n);

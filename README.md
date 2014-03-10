@@ -122,7 +122,7 @@ false dependencies.)
 On a superscalar RISC processor, I'd actually expect the
 first algorithm to do better.
 
-The actual performance numbers are:<blockquote>
+The actual performance numbers on my Core II duo in 2007 were:<blockquote>
 
     $ ./popcount 1000000
     popcount_naive: 1.6666e+07 iters in 688 msecs for 41.28 nsecs/iter
@@ -145,7 +145,7 @@ multiply for the accumulation step at the end.  Amazing that
 it's faster than a couple of shifts and adds on Intel's
 current flagship parts.
 
-Update: At the suggestion of Bill Trost, I added 8 and
+**Update:** At the suggestion of Bill Trost, I added 8 and
 16-bit table-driven popcount implementations.  These perform
 the fastest in the benchmark test-stand, at about
 3ns/iteration.  They're about the same speed, so one would
@@ -162,7 +162,7 @@ energy I'll create a more realistic testbench, and we'll see
 how the table-driven algorithms compare to the
 pure-computational ones in 2008.
 
-Update: At the suggestion of David Taht, Mike Haertel and I
+**Update:** At the suggestion of David Taht, Mike Haertel and I
 investigated the anomalously good performance of the
 divide-and-conquer popcounts on some 64-bit machines running
 gcc 3.4.  Turns out that this version of gcc is smart enough
@@ -171,6 +171,36 @@ didn't have a loop dependency, and that all 64-bit machines
 have SSE: it was running four iterations of popcount in
 parallel on the MMX unit. :-) Fixed by introducing the
 obvious dependency.
+
+**Update 2014-03-09:** Here's the numbers for my modern
+Haswell machine (Intel Core i7-4770K CPU @
+3.50GHz).<blockquote>
+
+    bartfan @ ./popcount 1000000
+    popcount_naive: 1.25e+08 iters in 2070 msecs for 16.56 nsecs/iter
+    popcount_8: 1e+09 iters in 4807 msecs for 4.81 nsecs/iter
+    popcount_6: 1e+09 iters in 4569 msecs for 4.57 nsecs/iter
+    popcount_hakmem: 1e+09 iters in 5419 msecs for 5.42 nsecs/iter
+    popcount_keane: 1e+09 iters in 5674 msecs for 5.67 nsecs/iter
+    popcount_3: 1e+09 iters in 4037 msecs for 4.04 nsecs/iter
+    popcount_4: 1e+09 iters in 3958 msecs for 3.96 nsecs/iter
+    popcount_2: 1e+09 iters in 4134 msecs for 4.13 nsecs/iter
+    popcount_mult: 1e+09 iters in 3916 msecs for 3.92 nsecs/iter
+    popcount_tabular_8: 1e+09 iters in 3356 msecs for 3.36 nsecs/iter
+    popcount_tabular_16: 1e+09 iters in 4372 msecs for 4.37 nsecs/iter
+
+</blockquote>Except for `popcount_naive` (16.68 nsecs/iter) and
+`popcount_8` (4.80 nsecs/iter) these timings were reproduced
+exactly on a run ten times as long.
+
+Note that most of the conclusions of 2009 remain roughly
+valid.  Naive is still as terrible as one would expect. Most
+everything else is more-or-less tied, except 8-bit tabular,
+which is some 25% faster. Note that 16-bit tabular is losing
+substantially now, and that the divide-and-conquer popcounts
+have pretty much caught up with multiplication.
+
+-----
 
 This work is made available under the GPL version 3 or
 later. Please see the file COPYING in this distribution for
