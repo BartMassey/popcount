@@ -5,8 +5,8 @@
 # distribution of this software for license terms.
 
 CC = gcc
-# Replace the machine with yours
-CFLAGS = -Wall -O2 -march=core-avx2
+# Replace the machine flags with yours. Or not.
+CFLAGS = -Wall -O4 # -march=core-avx2
 
 popcount: popcount.o
 

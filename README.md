@@ -173,8 +173,9 @@ parallel on the MMX unit. :-) Fixed by introducing the
 obvious dependency.
 
 **Update 2014-03-09:** Here's the numbers for my modern
-Haswell machine (Intel Core i7-4770K CPU @
-3.50GHz).<blockquote>
+Haswell machine (Intel Core i7-4770K CPU @ 3.50GHz),
+compiled with Debian GCC 4.8.2 `-O2
+-march=core-avx2`.<blockquote>
 
     bartfan @ ./popcount 1000000
     popcount_naive: 1.25e+08 iters in 2070 msecs for 16.56 nsecs/iter
@@ -191,14 +192,30 @@ Haswell machine (Intel Core i7-4770K CPU @
 
 </blockquote>Except for `popcount_naive` (16.68 nsecs/iter) and
 `popcount_8` (4.80 nsecs/iter) these timings were reproduced
-exactly on a run ten times as long.
+exactly on a run ten times as long. Bumping the optimization
+level to `-O4` made only small differences in these, and
+subsequently removing the Haswell-specific optimizations
+made little difference at all.<blockquote>
 
-Note that most of the conclusions of 2009 remain roughly
-valid.  Naive is still as terrible as one would expect. Most
-everything else is more-or-less tied, except 8-bit tabular,
-which is some 25% faster. Note that 16-bit tabular is losing
-substantially now, and that the divide-and-conquer popcounts
-have pretty much caught up with multiplication.
+    popcount_naive: 1.25e+08 iters in 2079 msecs for 16.63 nsecs/iter
+    popcount_8: 1e+09 iters in 4540 msecs for 4.54 nsecs/iter
+    popcount_6: 1e+09 iters in 4298 msecs for 4.30 nsecs/iter
+    popcount_hakmem: 1e+09 iters in 5430 msecs for 5.43 nsecs/iter
+    popcount_keane: 1e+09 iters in 5683 msecs for 5.68 nsecs/iter
+    popcount_3: 1e+09 iters in 4030 msecs for 4.03 nsecs/iter
+    popcount_4: 1e+09 iters in 3967 msecs for 3.97 nsecs/iter
+    popcount_2: 1e+09 iters in 4151 msecs for 4.15 nsecs/iter
+    popcount_mult: 1e+09 iters in 3921 msecs for 3.92 nsecs/iter
+    popcount_tabular_8: 1e+09 iters in 3365 msecs for 3.37 nsecs/iter
+    popcount_tabular_16: 1e+09 iters in 4386 msecs for 4.39 nsecs/iter
+
+</blockquote>Note that most of the conclusions of 2009
+remain roughly valid.  Naive is still as terrible as one
+would expect. Most everything else is more-or-less tied,
+except 8-bit tabular, which is some 25% faster. Note that
+16-bit tabular is losing substantially now, and that the
+divide-and-conquer popcounts have pretty much caught up with
+multiplication.
 
 -----
 
