@@ -8,7 +8,9 @@ CC = gcc
 # Replace the machine with yours
 CFLAGS = -Wall -O2 -march=core-avx2
 
-popcount: popcount.o  popcount_table_8.c popcount_table_16.c
+popcount: popcount.o
+
+popcount.o:  popcount_table_8.c popcount_table_16.c
 
 popcount_table_8.c: make_table.5c
 	nickle make_table.5c 8 >$*.c
