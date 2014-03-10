@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Bart Massey
+ * Copyright (c) 2007 Bart Massey
  * ALL RIGHTS RESERVED
  * 
  * [This program is licensed under the GPL version 3 or later.]
