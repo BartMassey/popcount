@@ -50,7 +50,7 @@ Right now:
   * The user gives the number of iterations of a fixed-size
     block.  I should do the `x11perf` thing and have the user
     supply a desired number of seconds instead, and use the
-    preheat loop to calibrate.  (Update: I now do a sort of
+    preheat loop to calibrate.  (**Update:** I now do a sort of
     cheesy approximation to this.  See the source.)
 
 Of the things I tried the one that seemed to be
@@ -109,7 +109,7 @@ fear that the timing loop may be interfering with my
 results, or that the compiler or the CPU may be losing on
 dispatch.
 
-(Update: I had said "Now that I think about it, though,
+(**Update:** I had said "Now that I think about it, though,
 what's more likely is that the shifts by small powers of two
 are being done in the address unit as per standard Intel
 practice, where shifts by multiples of three need to be done
