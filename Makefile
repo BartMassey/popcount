@@ -4,9 +4,9 @@
 # Please see the file COPYING in the source
 # distribution of this software for license terms.
 
-CC = gcc
+CC = clang
 # Replace the machine flags with yours. Or not.
-CFLAGS = -Wall -O4 # -march=core-avx2
+CFLAGS = -O4 # -march=core-avx2
 
 popcount: popcount.o
 

@@ -209,7 +209,12 @@ made little difference at all.<blockquote>
     popcount_tabular_8: 1e+09 iters in 3365 msecs for 3.37 nsecs/iter
     popcount_tabular_16: 1e+09 iters in 4386 msecs for 4.39 nsecs/iter
 
-</blockquote>Note that most of the conclusions of 2009
+</blockquote>In general, compiling with CLANG made the slow
+benchmarks a little faster, and the fast ones slightly
+slower. The most important difference was probably
+`popcount_tabular_8`, which sped to 3.16 nsecs/iter.
+
+Note that most of the conclusions of 2009
 remain roughly valid.  Naive is still as terrible as one
 would expect. Most everything else is more-or-less tied,
 except 8-bit tabular, which is some 25% faster. Note that
