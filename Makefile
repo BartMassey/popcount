@@ -4,7 +4,7 @@
 # Please see the file COPYING in the source
 # distribution of this software for license terms.
 
-CC = clang
+CC = gcc
 # Replace the machine flags with yours. Or not.
 CFLAGS = -O4 # -march=core-avx2
 
