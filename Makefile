@@ -15,3 +15,9 @@ popcount_table_8.c: make_table.5c
 
 popcount_table_16.c: make_table.5c
 	nickle make_table.5c 16 >$*.c
+
+clean:
+	-rm -f popcount.o popcount
+
+distclean: clean
+	-rm -f popcount_table_8.c popcount_table_16.c
