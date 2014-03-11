@@ -153,22 +153,22 @@ popcount_4(uint32_t x)
 DRIVER(4)
 
 
-    /* Classic binary divide-and-conquer popcount.
-       This is popcount_2() from
-       http://en.wikipedia.org/wiki/Hamming_weight */
-    /* 15 ops, 3 long immediates, 14 stages, 9 alu ops, 9 alu stages */
-    static inline uint32_t
-    popcount_2(uint32_t x)
-    {
-	uint32_t m1 = 0x55555555;
-	uint32_t m2 = 0x33333333;
-	uint32_t m4 = 0x0f0f0f0f;
-	x -= (x >> 1) & m1;
-	x = (x & m2) + ((x >> 2) & m2);
-	x = (x + (x >> 4)) & m4;
-	x += x >>  8;
-	return (x + (x >> 16)) & 0x3f;
-    }
+/* Classic binary divide-and-conquer popcount.
+   This is popcount_2() from
+   http://en.wikipedia.org/wiki/Hamming_weight */
+/* 15 ops, 3 long immediates, 14 stages, 9 alu ops, 9 alu stages */
+static inline uint32_t
+popcount_2(uint32_t x)
+{
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0x33333333;
+    uint32_t m4 = 0x0f0f0f0f;
+    x -= (x >> 1) & m1;
+    x = (x & m2) + ((x >> 2) & m2);
+    x = (x + (x >> 4)) & m4;
+    x += x >>  8;
+    return (x + (x >> 16)) & 0x3f;
+}
 DRIVER(2)
 
 
