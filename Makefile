@@ -6,7 +6,7 @@
 
 CC = gcc
 # Replace the machine flags with yours. Or not.
-CFLAGS = -O4 # -march=core-avx2
+CFLAGS = -Wall -O4 -march=core-avx2
 
 popcount: popcount.o
 
