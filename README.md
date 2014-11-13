@@ -202,6 +202,12 @@ have pretty much caught up with multiplication.
 
 -----
 
+I have included [slides](pdxbyte-popcount.pdf) from a
+[PDXByte talk](https://www.youtube.com/watch?v=opJvsJk1B68)
+I gave in March 2014. Enjoy.
+
+-----
+
 This work is made available under the GPL version 3 or
 later. Please see the file COPYING in this distribution for
 license terms.
