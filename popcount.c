@@ -153,22 +153,22 @@ popcount_4(uint32_t x)
 DRIVER(4)
 
 
-    /* Classic binary divide-and-conquer popcount.
-       This is popcount_2() from
-       http://en.wikipedia.org/wiki/Hamming_weight */
-    /* 15 ops, 3 long immediates, 14 stages, 9 alu ops, 9 alu stages */
-    static inline uint32_t
-    popcount_2(uint32_t x)
-    {
-	uint32_t m1 = 0x55555555;
-	uint32_t m2 = 0x33333333;
-	uint32_t m4 = 0x0f0f0f0f;
-	x -= (x >> 1) & m1;
-	x = (x & m2) + ((x >> 2) & m2);
-	x = (x + (x >> 4)) & m4;
-	x += x >>  8;
-	return (x + (x >> 16)) & 0x3f;
-    }
+/* Classic binary divide-and-conquer popcount.
+   This is popcount_2() from
+   http://en.wikipedia.org/wiki/Hamming_weight */
+/* 15 ops, 3 long immediates, 14 stages, 9 alu ops, 9 alu stages */
+static inline uint32_t
+popcount_2(uint32_t x)
+{
+    uint32_t m1 = 0x55555555;
+    uint32_t m2 = 0x33333333;
+    uint32_t m4 = 0x0f0f0f0f;
+    x -= (x >> 1) & m1;
+    x = (x & m2) + ((x >> 2) & m2);
+    x = (x + (x >> 4)) & m4;
+    x += x >>  8;
+    return (x + (x >> 16)) & 0x3f;
+}
 DRIVER(2)
 
 
@@ -247,19 +247,27 @@ popcount_x86(uint32_t x)
 DRIVER(x86)
 #endif
 
+/* compiler __builtin_popcount() */
+static inline uint32_t
+popcount_cc(uint32_t x)
+{
+    return __builtin_popcount(x);
+}
+DRIVER(cc)
+
 struct drivers drivers[] = {
-/*  {"popcount_swar", popcount_swar, drive_swar, 1}, */
-    {"popcount_naive", popcount_naive, drive_naive, 8},
-    {"popcount_8", popcount_8, drive_8, 1},
-    {"popcount_6", popcount_6, drive_6, 1},
-    {"popcount_hakmem", popcount_hakmem, drive_hakmem, 1},
-    {"popcount_keane", popcount_keane, drive_keane, 1},
-    {"popcount_3", popcount_3, drive_3, 1},
-    {"popcount_4", popcount_4, drive_4, 1},
-    {"popcount_2", popcount_2, drive_2, 1},
-    {"popcount_mult", popcount_mult, drive_mult, 1},
-    {"popcount_tabular_8", popcount_tabular_8, drive_tabular_8, 1},
-    {"popcount_tabular_16", popcount_tabular_16, drive_tabular_16, 1},
+    {"popcount_naive", popcount_naive, drive_naive, 16},
+    {"popcount_8", popcount_8, drive_8, 4},
+    {"popcount_6", popcount_6, drive_6, 4},
+    {"popcount_hakmem", popcount_hakmem, drive_hakmem, 4},
+    {"popcount_keane", popcount_keane, drive_keane, 4},
+    {"popcount_3", popcount_3, drive_3, 4},
+    {"popcount_4", popcount_4, drive_4, 4},
+    {"popcount_2", popcount_2, drive_2, 4},
+    {"popcount_mult", popcount_mult, drive_mult, 4},
+    {"popcount_tabular_8", popcount_tabular_8, drive_tabular_8, 4},
+    {"popcount_tabular_16", popcount_tabular_16, drive_tabular_16, 4},
+    {"popcount_cc", popcount_cc, drive_cc, 1},
 #ifdef X86_POPCNT
     {"popcount_x86", popcount_x86, drive_x86, 1},
 #endif

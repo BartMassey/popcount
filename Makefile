@@ -4,8 +4,8 @@
 # Please see the file COPYING in the source
 # distribution of this software for license terms.
 
-# CC = gcc -O4
-CC = clang -O3
+CC = gcc -O4
+# CC = clang -O3
 
 # Replace the machine with yours.  Don't use X86_POPCNT
 # unless you are on a Nehalem or later Intel processor. Some

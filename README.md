@@ -214,8 +214,10 @@ have pretty much caught up with multiplication.
 
 **Update 2016-02-21:** I found out that my
 previously-benchmarked Haswell machine (Intel Core i7-4770K
-CPU @ 3.50GHz) has a `popcnt` instruction. Who knew? Here's
-all the numbers again.
+CPU @ 3.50GHz) has a `popcnt` instruction. Who knew?  I
+added both a call to `__builtin_popcount()` and an inline
+assembly `popcnt` version to the benchmarks.  Here's all the
+numbers again.
 <blockquote>
 
     popcount_naive: 1.25e+08 iters in 2076 msecs for 16.61 nsecs/iter
@@ -229,6 +231,7 @@ all the numbers again.
     popcount_mult: 1e+09 iters in 4014 msecs for 4.01 nsecs/iter
     popcount_tabular_8: 1e+09 iters in 3417 msecs for 3.42 nsecs/iter
     popcount_tabular_16: 1e+09 iters in 4449 msecs for 4.45 nsecs/iter
+    popcount_cc: 1e+09 iters in 1308 msecs for 1.31 nsecs/iter
     popcount_x86: 1e+09 iters in 1313 msecs for 1.31 nsecs/iter
 
 </blockquote>
@@ -254,6 +257,7 @@ that:
     popcount_mult: 1e+09 iters in 4028 msecs for 4.03 nsecs/iter
     popcount_tabular_8: 1e+09 iters in 3167 msecs for 3.17 nsecs/iter
     popcount_tabular_16: 1e+09 iters in 4040 msecs for 4.04 nsecs/iter
+    popcount_cc: 1e+09 iters in 1308 msecs for 1.31 nsecs/iter
     popcount_x86: 1e+09 iters in 1314 msecs for 1.31 nsecs/iter
 
 </blockquote>
