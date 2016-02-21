@@ -1,6 +1,18 @@
 # Popcount
-Copyright &copy; 2014 Bart Massey  
-2014-03-08
+Copyright &copy; 2016 Bart Massey  
+2016-02-20
+
+Here's some implementations of bit population count with
+benchmarks. You can build `popcount` by typing `make`, but
+you should first examine the Makefile and set what you need
+to tune. You'll also need to install
+[Nickle](http://nickle.org) to build the tables.
+
+Once you've built `popcount`, run it with a number of
+iterations to bench: 10000 is good to start. It will
+spit out some explanatory numbers.
+
+## Background
 
 [This writeup is based on work from 2009-04-07 and earlier.]
 
@@ -173,8 +185,8 @@ parallel on the MMX unit. :-) Fixed by introducing the
 obvious dependency.
 
 **Update 2014-03-09:** Here's the numbers for my modern
-Haswell machine (Intel Core i7-4770K CPU @
-3.50GHz).<blockquote>
+Haswell machine (Intel Core i7-4770K CPU @ 3.50GHz).
+<blockquote>
 
     bartfan @ ./popcount 1000000
     popcount_naive: 1.25e+08 iters in 2070 msecs for 16.56 nsecs/iter
@@ -199,6 +211,59 @@ everything else is more-or-less tied, except 8-bit tabular,
 which is some 25% faster. Note that 16-bit tabular is losing
 substantially now, and that the divide-and-conquer popcounts
 have pretty much caught up with multiplication.
+
+**Update 2016-02-21:** I found out that my
+previously-benchmarked Haswell machine (Intel Core i7-4770K
+CPU @ 3.50GHz) has a `popcnt` instruction. Who knew? Here's
+all the numbers again.
+<blockquote>
+
+    popcount_naive: 1.25e+08 iters in 2076 msecs for 16.61 nsecs/iter
+    popcount_8: 1e+09 iters in 4520 msecs for 4.52 nsecs/iter
+    popcount_6: 1e+09 iters in 4525 msecs for 4.53 nsecs/iter
+    popcount_hakmem: 1e+09 iters in 5622 msecs for 5.62 nsecs/iter
+    popcount_keane: 1e+09 iters in 5791 msecs for 5.79 nsecs/iter
+    popcount_3: 1e+09 iters in 4141 msecs for 4.14 nsecs/iter
+    popcount_4: 1e+09 iters in 4177 msecs for 4.18 nsecs/iter
+    popcount_2: 1e+09 iters in 4215 msecs for 4.21 nsecs/iter
+    popcount_mult: 1e+09 iters in 4014 msecs for 4.01 nsecs/iter
+    popcount_tabular_8: 1e+09 iters in 3417 msecs for 3.42 nsecs/iter
+    popcount_tabular_16: 1e+09 iters in 4449 msecs for 4.45 nsecs/iter
+    popcount_x86: 1e+09 iters in 1313 msecs for 1.31 nsecs/iter
+
+</blockquote>
+I am a little mystified at the (replicable) difference
+between these runs and the previous 2014 runs on the same
+machine. Obviously, we must take this whole thing with a
+large grant of salt. The most likely difference is the
+compiler: this is GCC 5.3.1, which seems to do a bit worse
+overall than the 2014 version. Or something.
+
+To clear things up a bit, I also ran with clang-3.8. Here's
+that:
+<blockquote>
+
+    popcount_naive: 1.25e+08 iters in 2069 msecs for 16.55 nsecs/iter
+    popcount_8: 1e+09 iters in 4805 msecs for 4.80 nsecs/iter
+    popcount_6: 1e+09 iters in 4408 msecs for 4.41 nsecs/iter
+    popcount_hakmem: 1e+09 iters in 5631 msecs for 5.63 nsecs/iter
+    popcount_keane: 1e+09 iters in 5108 msecs for 5.11 nsecs/iter
+    popcount_3: 1e+09 iters in 4162 msecs for 4.16 nsecs/iter
+    popcount_4: 1e+09 iters in 4137 msecs for 4.14 nsecs/iter
+    popcount_2: 1e+09 iters in 4224 msecs for 4.22 nsecs/iter
+    popcount_mult: 1e+09 iters in 4028 msecs for 4.03 nsecs/iter
+    popcount_tabular_8: 1e+09 iters in 3167 msecs for 3.17 nsecs/iter
+    popcount_tabular_16: 1e+09 iters in 4040 msecs for 4.04 nsecs/iter
+    popcount_x86: 1e+09 iters in 1314 msecs for 1.31 nsecs/iter
+
+</blockquote>
+Similar, but not the same. Conclusion: it's all in the compiler noise.
+
+Having said that, check out that tasty `popcnt` instruction!
+We've always said it doesn't really matter -- and it
+doesn't, really. But that's pretty clearly the right answer
+if GCC could figure out how to use it here without help from
+inlining.
 
 -----
 

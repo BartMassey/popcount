@@ -225,6 +225,28 @@ popcount_tabular_16(uint32_t x)
 DRIVER(tabular_16)
 
 
+#ifdef X86_POPCNT
+static int
+has_popcnt_x86() {
+    uint32_t eax, ecx;
+    eax = 0x01;
+    asm("cpuid" : "+a" (eax), "=c" (ecx) : : "ebx", "edx");
+    return (ecx >> 23) & 1;
+}
+
+
+/* x86 popcount instruction */
+/* 3 cycle latency, 1 cycle throughput */
+static inline uint32_t
+popcount_x86(uint32_t x)
+{
+    uint32_t result;
+    asm("popcntl %1, %0" : "=r" (result) : "r" (x) : "cc");
+    return result;
+}
+DRIVER(x86)
+#endif
+
 struct drivers drivers[] = {
 /*  {"popcount_swar", popcount_swar, drive_swar, 1}, */
     {"popcount_naive", popcount_naive, drive_naive, 8},
@@ -238,6 +260,9 @@ struct drivers drivers[] = {
     {"popcount_mult", popcount_mult, drive_mult, 1},
     {"popcount_tabular_8", popcount_tabular_8, drive_tabular_8, 1},
     {"popcount_tabular_16", popcount_tabular_16, drive_tabular_16, 1},
+#ifdef X86_POPCNT
+    {"popcount_x86", popcount_x86, drive_x86, 1},
+#endif
     {0, 0, 0}
 };
 
@@ -338,6 +363,9 @@ main(int argc,
      char **argv) {
     extern long atoi();
     int n = atoi(argv[1]);
+#ifdef X86_POPCNT
+    assert(has_popcnt_x86());
+#endif
     init_randoms();
     run_all(n);
     return 0;

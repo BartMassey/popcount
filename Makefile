@@ -4,9 +4,14 @@
 # Please see the file COPYING in the source
 # distribution of this software for license terms.
 
-CC = gcc
-# Replace the machine with yours
-CFLAGS = -Wall -O2 -march=core-avx2
+# CC = gcc -O4
+CC = clang -O3
+
+# Replace the machine with yours.  Don't use X86_POPCNT
+# unless you are on a Nehalem or later Intel processor. Some
+# checking will be done on Intel/AMD parts, but things
+# won't even compile (assemble) on non-x86.
+CFLAGS = -Wall -march=core-avx2 -DX86_POPCNT
 
 popcount: popcount.o
 
