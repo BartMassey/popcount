@@ -11,7 +11,7 @@ CC = gcc -O4
 # unless you are on a Nehalem or later Intel processor. Some
 # checking will be done on Intel/AMD parts, but things
 # won't even compile (assemble) on non-x86.
-CFLAGS = -Wall -march=core-avx2 -DX86_POPCNT
+CFLAGS = -Wall -march=native -DX86_POPCNT
 
 popcount: popcount.o
 
