@@ -269,6 +269,52 @@ doesn't, really. But that's pretty clearly the right answer
 if GCC could figure out how to use it here without help from
 inlining.
 
+**Update 2016-02-24:** Noticed that the `-march` flag should
+have been set to `native`.
+<blockquote>
+
+    popcount_naive: 6.25e+08 iters in 10333 msecs for 16.53 nsecs/iter
+    popcount_8: 2.5e+09 iters in 11225 msecs for 4.49 nsecs/iter
+    popcount_6: 2.5e+09 iters in 11162 msecs for 4.46 nsecs/iter
+    popcount_hakmem: 2.5e+09 iters in 13846 msecs for 5.54 nsecs/iter
+    popcount_keane: 2.5e+09 iters in 14281 msecs for 5.71 nsecs/iter
+    popcount_3: 2.5e+09 iters in 10171 msecs for 4.07 nsecs/iter
+    popcount_4: 2.5e+09 iters in 10290 msecs for 4.12 nsecs/iter
+    popcount_2: 2.5e+09 iters in 10378 msecs for 4.15 nsecs/iter
+    popcount_mult: 2.5e+09 iters in 9859 msecs for 3.94 nsecs/iter
+    popcount_tabular_8: 2.5e+09 iters in 8431 msecs for 3.37 nsecs/iter
+    popcount_tabular_16: 2.5e+09 iters in 11004 msecs for 4.40 nsecs/iter
+    popcount_cc: 1e+10 iters in 12936 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e+10 iters in 12942 msecs for 1.29 nsecs/iter
+
+
+</blockquote>
+Fixing the architecture flattened things out a bit more, but
+didn't change results in any interesting way. Basically, on
+this machine and with current GCC, all the routines run at
+the same speed except *naive,* which is expectedly slow, and
+the inline `popcnt` instruction ones, which are expectedly
+fast.
+
+Advice at this point:
+
+* If you want machine-independent and don't care *too* much
+  about speed, use the famous `popcount_2`. It's fast
+  enough, familiar and truly portable.
+
+* Use `popcount_tabular_8` if you're willing to burn some
+  cache (not much) and want a slight but portable
+  speedup. Also if you're on some machine without a barrel
+  shifter, this can be adapted to not do any shifts without
+  too much work at the expense of hitting cache. (Do
+  byte reads from the input variable.)
+
+* If you need all the speed, and your machine has a popcount
+  instruction, use `popcount_cc`. Code is still portable,
+  but only to GCC-compatible compilers (GCC, Clang). I don't
+  know how fast it will be on machines without a popcount
+  instruction.
+
 -----
 
 I have included [slides](pdxbyte-popcount.pdf) from a
