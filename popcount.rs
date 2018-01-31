@@ -125,21 +125,33 @@ fn test_drivers() -> Vec<&'static Driver> {
     drivers
 }
 
+fn total_time(d: time::Duration) -> f64 {
+    d.as_secs() as f64 + d.subsec_nanos() as f64 / 1.0e9
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let n: u32 = args[1].parse().expect("invalid count");
     let mut rng = rand::thread_rng();
     let mut randoms = [0u32; BLOCKSIZE];
+    let mut csum = 0;
     for i in randoms.iter_mut() {
         *i = rng.gen()
     }
     let drivers = test_drivers();
     for driver in drivers {
         let preheat = PREHEAT_BASE / driver.divisor;
-        let mut csum = (*driver.blockf)(preheat, &randoms);
+        csum += (*driver.blockf)(preheat, &randoms);
         let now = time::Instant::now();
-        csum += (*driver.blockf)(n / driver.divisor, &randoms);
-        let runtime = now.elapsed();
-        println!("{}: {} {}", driver.name, duration_secs(runtime), csum);
+        let nblocks = n / driver.divisor;
+        csum += (*driver.blockf)(nblocks, &randoms);
+        let runtime = total_time(now.elapsed());
+        let size = nblocks as f64 * BLOCKSIZE as f64;
+        println!("{}: {:.0} iters in {} msecs for {} nsecs/iter",
+                 driver.name,
+                 size,
+                 runtime * 1.0e3,
+                 (runtime / size) * 1.0e9);
     }
+    println!("{}", csum);
 }
