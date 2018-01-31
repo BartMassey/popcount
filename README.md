@@ -315,6 +315,82 @@ Advice at this point:
   know how fast it will be on machines without a popcount
   instruction.
 
+**Update 2018-01-30:** Added a Rust implementation. It tries
+to conform to the C implementation as much as reasonably
+feasible. The code bodies are essentially copy-pasted.
+
+This code currently needs nightly to get inline assembly
+support: the x86 popcount will be compiled-out on non-x86,
+and will cause a runtime assertion failure on x86 without
+popcnt.
+
+The native Rust `u32::count_ones()` method is not compiled
+into a native `popcnt` instruction in current incarnations
+unless you play games with `RUSTFLAGS`. `count_ones()` is
+about the same speed as all the other fast popcounts,
+though, so it's probably the right thing if you don't need
+the machine instruction's speed.
+
+Current C numbers, GCC 7.2.0 on my Haswell box described
+above:
+<blockquote>
+
+    popcount_naive: 6.25e+07 iters in 930 msecs for 14.88 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1149 msecs for 4.60 nsecs/iter
+    popcount_6: 2.5e+08 iters in 1111 msecs for 4.44 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1455 msecs for 5.82 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1512 msecs for 6.05 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1063 msecs for 4.25 nsecs/iter
+    popcount_4: 2.5e+08 iters in 1034 msecs for 4.14 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1043 msecs for 4.17 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 994 msecs for 3.98 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 856 msecs for 3.42 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1095 msecs for 4.38 nsecs/iter
+    popcount_cc: 1e+09 iters in 1306 msecs for 1.31 nsecs/iter
+    popcount_x86: 1e+09 iters in 1302 msecs for 1.30 nsecs/iter
+
+</blockquote>
+
+Clang 4.0 is probably more comparable because LLVM:
+<blockquote>
+
+    popcount_naive: 6.25e+07 iters in 992 msecs for 15.87 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1207 msecs for 4.83 nsecs/iter
+    popcount_6: 2.5e+08 iters in 1097 msecs for 4.39 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1351 msecs for 5.40 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1266 msecs for 5.06 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1041 msecs for 4.16 nsecs/iter
+    popcount_4: 2.5e+08 iters in 1022 msecs for 4.09 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1048 msecs for 4.19 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 999 msecs for 4.00 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 779 msecs for 3.12 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 994 msecs for 3.98 nsecs/iter
+    popcount_cc: 1e+09 iters in 1304 msecs for 1.30 nsecs/iter
+    popcount_x86: 1e+09 iters in 1308 msecs for 1.31 nsecs/iter
+
+</blockquote>
+
+Current Rust numbers, rustc 1.24.0 nightly 2018-01-01:
+<blockquote>
+
+    popcount_naive: 6.25e7 iters in 971 msecs for 15.54 nsecs/iter
+    popcount_8: 2.5e8 iters in 1205 msecs for 4.82 nsecs/iter
+    popcount_6: 2.5e8 iters in 1097 msecs for 4.39 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1349 msecs for 5.40 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1260 msecs for 5.04 nsecs/iter
+    popcount_3: 2.5e8 iters in 1060 msecs for 4.24 nsecs/iter
+    popcount_4: 2.5e8 iters in 1035 msecs for 4.14 nsecs/iter
+    popcount_2: 2.5e8 iters in 1046 msecs for 4.18 nsecs/iter
+    popcount_mult: 2.5e8 iters in 996 msecs for 3.98 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 837 msecs for 3.35 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1211 msecs for 4.84 nsecs/iter
+    popcount_x86: 1e9 iters in 1305 msecs for 1.31 nsecs/iter
+    popcount_rs: 2.5e8 iters in 998 msecs for 3.99 nsecs/iter
+
+</blockquote>
+
+Up to variances, they're pretty much all the same.
+
 -----
 
 I have included [slides](pdxbyte-popcount.pdf) from a
