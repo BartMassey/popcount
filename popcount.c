@@ -198,7 +198,7 @@ struct drivers {
     uint32_t divisor;
 };
 
-#include "popcount_table_8.c"
+static uint32_t popcount_table_8[0x100];
 
 /* Table-driven popcount, with 8-bit tables */
 /* 6 ops plus 4 casts and 4 lookups, 0 long immediates, 4 stages */
@@ -212,7 +212,7 @@ popcount_tabular_8(uint32_t x)
 }
 DRIVER(tabular_8)
 
-#include "popcount_table_16.c"
+static uint32_t popcount_table_16[0x10000];
 
 /* Table-driven popcount, with 16-bit tables */
 /* 2 ops plus 2 casts and 2 lookups, 0 long immediates, 4 stages */
@@ -366,6 +366,15 @@ run_all(int n) {
 }
 
 
+static void
+init_popcount_tables(void) {
+    int i;
+    for (i = 0; i < 0x100; i++)
+        popcount_table_8[i] = popcount_naive(i);
+    for (i = 0; i < 0x10000; i++)
+        popcount_table_16[i] = popcount_naive(i);
+}
+
 int
 main(int argc,
      char **argv) {
@@ -375,6 +384,7 @@ main(int argc,
     assert(has_popcnt_x86());
 #endif
     init_randoms();
+    init_popcount_tables();
     run_all(n);
     return 0;
 }
