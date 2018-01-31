@@ -147,7 +147,7 @@ fn main() {
         csum += (*driver.blockf)(nblocks, &randoms);
         let runtime = total_time(now.elapsed());
         let size = nblocks as f64 * BLOCKSIZE as f64;
-        println!("{}: {:.0} iters in {} msecs for {} nsecs/iter",
+        println!("{}: {:e} iters in {} msecs for {} nsecs/iter",
                  driver.name,
                  size,
                  runtime * 1.0e3,
