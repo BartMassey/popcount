@@ -27,6 +27,7 @@ macro_rules! driver {
     }
 }
 
+// One bit at a time, with early termination.
 fn popcount_naive(mut n: u32) -> u32 {
     let mut c = 0;
     while n > 0 {
@@ -36,6 +37,20 @@ fn popcount_naive(mut n: u32) -> u32 {
     c
 }
 driver!(drive_naive, popcount_naive);
+
+/* bit-parallelism */
+fn popcount_8(mut n: u32) -> u32 {
+    let m = 0x01010101u32;
+    let mut c = n & m;
+    for _ in 0..7 {
+	n >>= 1;
+	c += n & m;
+    }
+    c += c >> 8;
+    c += c >> 16;
+    c & 0x3f
+}
+driver!(drive_8, popcount_8);
 
 struct Driver {
     name: &'static str,
@@ -50,6 +65,12 @@ const DRIVERS: &[Driver] = &[
         f: &popcount_naive,
         blockf: &drive_naive,
         divisor: 16
+    },
+    Driver {
+        name: "popcount_8",
+        f: &popcount_8,
+        blockf: &drive_8,
+        divisor: 4
     }];
 
 fn duration_secs(d: time::Duration) -> f64 {
