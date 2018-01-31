@@ -28,6 +28,7 @@ macro_rules! driver {
 }
 
 // One bit at a time, with early termination.
+#[inline(always)]
 fn popcount_naive(mut n: u32) -> u32 {
     let mut c = 0;
     while n > 0 {
@@ -39,6 +40,7 @@ fn popcount_naive(mut n: u32) -> u32 {
 driver!(drive_naive, popcount_naive);
 
 /* bit-parallelism */
+#[inline(always)]
 fn popcount_8(mut n: u32) -> u32 {
     let m = 0x01010101u32;
     let mut c = n & m;
