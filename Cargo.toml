@@ -16,3 +16,4 @@ path = "popcount.rs"
 
 [dependencies]
 rand = "*"
+lazy_static = "*"

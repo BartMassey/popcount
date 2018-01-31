@@ -5,6 +5,8 @@
 // distribution of this software for license terms.
 
 extern crate rand;
+#[macro_use]
+extern crate lazy_static;
 
 use rand::Rng;
 use std::env;
@@ -152,6 +154,54 @@ fn popcount_2(mut n: u32) -> u32 {
 }
 driver!(drive_2, popcount_2, DRIVER_2, "popcount_2", 4);
 
+// Popcount using multiply.
+// This is popcount_3() from
+// http://en.wikipedia.org/wiki/Hamming_weight
+#[inline(always)]
+fn popcount_mult(mut n: u32) -> u32 {
+    let m1 = 0x55555555;
+    let m2 = 0x33333333;
+    let m4 = 0x0f0f0f0f;
+    let h01 = 0x01010101;
+    n -= (n >> 1) & m1;   // put count of each 2 bits into those 2 bits
+    n = (n & m2) + ((n >> 2) & m2);   // put count of each 4 bits in
+    n = (n + (n >> 4)) & m4;  // put count of each 8 bits in
+    (n * h01) >> 24  // returns left 8 bits of n + (n<<8) + ...
+}
+driver!(drive_mult, popcount_mult, DRIVER_MULT, "popcount_mult", 4);
+
+// 8-bit popcount table, filled at first use.
+lazy_static! {
+    static ref POPCOUNT_TABLE_8: Vec<u32> =
+        (0..0x100).map(|i| popcount_naive(i)).collect();
+}
+
+// Table-driven popcount, with 8-bit tables
+#[inline(always)]
+fn popcount_tabular_8(n: u32) -> u32 {
+    POPCOUNT_TABLE_8[n as u8 as usize] +
+    POPCOUNT_TABLE_8[(n >> 8) as u8 as usize] +
+    POPCOUNT_TABLE_8[(n >> 16) as u8 as usize] +
+    POPCOUNT_TABLE_8[(n >> 24) as usize]
+}
+driver!(drive_tabular_8, popcount_tabular_8, DRIVER_TABULAR_8,
+        "popcount_tabular_8", 4);
+
+// 16-bit popcount table, filled at first use.
+lazy_static! {
+    static ref POPCOUNT_TABLE_16: Vec<u32> =
+        (0..0x10000).map(|i| popcount_naive(i)).collect();
+}
+
+// Table-driven popcount, with 16-bit tables
+#[inline(always)]
+fn popcount_tabular_16(n: u32) -> u32 {
+    POPCOUNT_TABLE_16[n as u16 as usize] +
+    POPCOUNT_TABLE_16[(n >> 16) as usize]
+}
+driver!(drive_tabular_16, popcount_tabular_16, DRIVER_TABULAR_16,
+        "popcount_tabular_16", 4);
+
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
     DRIVER_8,
@@ -160,7 +210,10 @@ const DRIVERS: &[Driver] = &[
     DRIVER_KEANE,
     DRIVER_3,
     DRIVER_4,
-    DRIVER_2 ];
+    DRIVER_2,
+    DRIVER_MULT,
+    DRIVER_TABULAR_8,
+    DRIVER_TABULAR_16 ];
 
 fn test_drivers() -> Vec<&'static Driver> {
     let testcases: &[(u32, u32)] = &[
@@ -221,7 +274,7 @@ fn main() {
         csum += (*driver.blockf)(nblocks, &randoms);
         let runtime = total_time(now.elapsed());
         let size = nblocks as f64 * BLOCKSIZE as f64;
-        println!("{}: {:e} iters in {} msecs for {} nsecs/iter",
+        println!("{}: {:e} iters in {:.0} msecs for {:.2} nsecs/iter",
                  driver.name,
                  size,
                  runtime * 1.0e3,
