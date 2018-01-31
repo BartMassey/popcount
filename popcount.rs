@@ -52,7 +52,7 @@ fn popcount_naive(mut n: u32) -> u32 {
 }
 driver!(drive_naive, popcount_naive, DRIVER_NAIVE, "popcount_naive", 16);
 
-/* bit-parallelism */
+// bit-parallelism
 #[inline(always)]
 fn popcount_8(mut n: u32) -> u32 {
     let m = 0x01010101u32;
@@ -67,7 +67,7 @@ fn popcount_8(mut n: u32) -> u32 {
 }
 driver!(drive_8, popcount_8, DRIVER_8, "popcount_8", 4);
 
-/* more bit-parallelism */
+// more bit-parallelism
 #[inline(always)]
 fn popcount_6(mut n: u32) -> u32 {
     let m = 0x41041041;
@@ -83,10 +83,84 @@ fn popcount_6(mut n: u32) -> u32 {
 }
 driver!(drive_6, popcount_6, DRIVER_6, "popcount_6", 4);
 
+// HAKMEM 169
+#[inline(always)]
+fn popcount_hakmem(n: u32) -> u32 {
+    let y = (n >> 1) & 0o33333333333;
+    let z = n - y - ((y >>1) & 0o33333333333);
+    ((z + (z >> 3)) & 0o30707070707) % 63
+}
+driver!(drive_hakmem, popcount_hakmem, DRIVER_HAKMEM, "popcount_hakmem", 4);
+
+// Joe Keane, sci.math.num-analysis, 9 July 1995,
+// as cited by an addendum to Hacker's Delight.
+// http://www.hackersdelight.org/divcMore.pdf
+#[inline(always)]
+fn remu63(n: u32) -> u32 {
+    let t = (((n >> 12) + n) >> 10) + (n << 2);
+    let u = ((t >> 6) + t + 3) & 0xff;
+    (u - (u >> 6)) >> 2
+}
+
+// HAKMEM 169 with Keane modulus
+#[inline(always)]
+fn popcount_keane(n: u32) -> u32 {
+    let y = (n >> 1) & 0o33333333333;
+    let z = n - y - ((y >>1) & 0o33333333333);
+    remu63((z + (z >> 3)) & 0o30707070707)
+}
+driver!(drive_keane, popcount_keane, DRIVER_KEANE, "popcount_keane", 4);
+
+// Divide-and-conquer with a ternary stage to reduce masking
+#[inline(always)]
+fn popcount_3(mut n: u32) -> u32 {
+    let m1 = 0x55555555;
+    let m2 = 0xc30c30c3;
+    n -= (n >> 1) & m1;
+    n = (n & m2) + ((n >> 2) & m2) + ((n >> 4) & m2); 
+    n += n >> 6;
+    (n + (n >> 12) + (n >> 24)) & 0x3f
+}
+driver!(drive_3, popcount_3, DRIVER_3, "popcount_3", 4);
+
+// Divide-and-conquer with a quaternary stage to reduce masking
+// and provide mostly power-of-two shifts
+#[inline(always)]
+fn popcount_4(mut n: u32) -> u32 {
+    let m1 = 0x55555555;
+    let m2 = 0x03030303;
+    n -= (n >> 1) & m1;
+    n = (n & m2) + ((n >> 2) & m2) + ((n >> 4) & m2) + ((n >> 6) & m2);
+    n += n >> 8;
+    (n + (n >> 16)) & 0x3f
+}
+driver!(drive_4, popcount_4, DRIVER_4, "popcount_4", 4);
+
+// Classic binary divide-and-conquer popcount.
+// This is popcount_2() from
+// http://en.wikipedia.org/wiki/Hamming_weight
+#[inline(always)]
+fn popcount_2(mut n: u32) -> u32 {
+    let m1 = 0x55555555;
+    let m2 = 0x33333333;
+    let m4 = 0x0f0f0f0f;
+    n -= (n >> 1) & m1;
+    n = (n & m2) + ((n >> 2) & m2);
+    n = (n + (n >> 4)) & m4;
+    n += n >>  8;
+    return (n + (n >> 16)) & 0x3f;
+}
+driver!(drive_2, popcount_2, DRIVER_2, "popcount_2", 4);
+
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
     DRIVER_8,
-    DRIVER_6 ];
+    DRIVER_6,
+    DRIVER_HAKMEM,
+    DRIVER_KEANE,
+    DRIVER_3,
+    DRIVER_4,
+    DRIVER_2 ];
 
 fn test_drivers() -> Vec<&'static Driver> {
     let testcases: &[(u32, u32)] = &[
