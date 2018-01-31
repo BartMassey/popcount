@@ -4,6 +4,8 @@
 // Please see the file COPYING in the source
 // distribution of this software for license terms.
 
+#![feature(asm)]
+
 extern crate rand;
 #[macro_use]
 extern crate lazy_static;
@@ -202,6 +204,29 @@ fn popcount_tabular_16(n: u32) -> u32 {
 driver!(drive_tabular_16, popcount_tabular_16, DRIVER_TABULAR_16,
         "popcount_tabular_16", 4);
 
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+fn has_popcnt_x86() -> bool {
+    let eax = 0x01u32;
+    let ecx: u32;
+    unsafe {
+        asm!("cpuid" : "={ecx}" (ecx) : "{eax}" (eax) : "ebx", "edx")
+    }
+    ((ecx >> 23) & 1) == 1
+}
+
+// x86 popcount instruction
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[inline(always)]
+fn popcount_x86(n: u32) -> u32 {
+    let result: u32;
+    unsafe {
+        asm!("popcntl $1, $0" : "=r" (result) : "r" (n) : "cc")
+    }
+    result
+}
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+driver!(drive_x86, popcount_x86, DRIVER_X86, "popcount_x86", 1);
+
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
     DRIVER_8,
@@ -213,7 +238,10 @@ const DRIVERS: &[Driver] = &[
     DRIVER_2,
     DRIVER_MULT,
     DRIVER_TABULAR_8,
-    DRIVER_TABULAR_16 ];
+    DRIVER_TABULAR_16,
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    DRIVER_X86,
+];
 
 fn test_drivers() -> Vec<&'static Driver> {
     let testcases: &[(u32, u32)] = &[
@@ -257,6 +285,8 @@ fn total_time(d: time::Duration) -> f64 {
 }
 
 fn main() {
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    assert!(has_popcnt_x86());
     let args: Vec<String> = env::args().collect();
     let n: u32 = args[1].parse().expect("invalid count");
     let mut rng = rand::thread_rng();
