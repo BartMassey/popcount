@@ -39,27 +39,25 @@ driver!(drive_naive, popcount_naive);
 
 struct Driver {
     name: &'static str,
-    f: Box<Fn (u32) -> u32>,
-    blockf: Option<Box<Fn (u32, &[u32; BLOCKSIZE]) -> u32>>,
+    f: &'static Fn (u32) -> u32,
+    blockf: &'static Fn (u32, &[u32; BLOCKSIZE]) -> u32,
     divisor: u32
 }
 
-fn list_drivers() -> Vec<Driver> {
-    vec![
-        Driver {
-            name: "popcount_naive",
-            f: Box::new(popcount_naive),
-            blockf: Some(Box::new(drive_naive)),
-            divisor: 16
-        }]
-}
+const DRIVERS: &[Driver] = &[
+    Driver {
+        name: "popcount_naive",
+        f: &popcount_naive,
+        blockf: &drive_naive,
+        divisor: 16
+    }];
 
 fn duration_secs(d: time::Duration) -> f64 {
     d.as_secs() as f64 + d.subsec_nanos() as f64 / 1.0e9
 }
 
-fn test_drivers(drivers: &mut Vec<Driver>) {
-    let testcases: Vec<(u32, u32)> = vec![
+fn test_drivers() -> Vec<&'static Driver> {
+    let testcases: &[(u32, u32)] = &[
         (0x00000080, 1),
         (0x000000f0, 4),
         (0x00008000, 1),
@@ -76,17 +74,23 @@ fn test_drivers(drivers: &mut Vec<Driver>) {
         (0x9b8be5b7, 20),
         (!0, 32),
         (0, 0) ];
-    for driver in drivers {
+    let mut drivers = Vec::new();
+    for driver in DRIVERS.iter() {
+        let mut ok = true;
         for (nt, &(input, expected)) in testcases.iter().enumerate() {
             let actual = (*driver.f)(input);
             if actual != expected {
                 println!("{} failed case {}: {:#x} -> {} != {}: abandoning",
                          driver.name, nt, input, actual, expected);
-                driver.blockf = None;
-                return
+                ok = false;
+                break
             }
         }
+        if ok {
+            drivers.push(driver)
+        }
     }
+    drivers
 }
 
 fn main() {
@@ -97,15 +101,13 @@ fn main() {
     for i in randoms.iter_mut() {
         *i = rng.gen()
     }
-    let mut drivers = list_drivers();
-    test_drivers(&mut drivers);
+    let drivers = test_drivers();
     for driver in drivers {
-        if let Some(blockf) = driver.blockf {
-            let mut csum = (*blockf)(PREHEAT_BASE / driver.divisor, &randoms);
-            let now = time::Instant::now();
-            csum += (*blockf)(n / driver.divisor, &randoms);
-            let runtime = now.elapsed();
-            println!("{}: {} {}", driver.name, duration_secs(runtime), csum);
-        }
+        let preheat = PREHEAT_BASE / driver.divisor;
+        let mut csum = (*driver.blockf)(preheat, &randoms);
+        let now = time::Instant::now();
+        csum += (*driver.blockf)(n / driver.divisor, &randoms);
+        let runtime = now.elapsed();
+        println!("{}: {} {}", driver.name, duration_secs(runtime), csum);
     }
 }
