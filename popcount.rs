@@ -13,8 +13,15 @@ use std::time;
 const BLOCKSIZE: usize = 1000;
 const PREHEAT_BASE: u32 = 50000;
 
+struct Driver {
+    name: &'static str,
+    f: &'static Fn (u32) -> u32,
+    blockf: &'static Fn (u32, &[u32; BLOCKSIZE]) -> u32,
+    divisor: u32
+}
+
 macro_rules! driver {
-    ($drive:ident, $popcount:ident) => {
+    ($drive:ident, $popcount:ident, $entry:ident, $name:expr, $div:expr) => {
         fn $drive(n: u32, randoms: &[u32;BLOCKSIZE]) -> u32 {
             let mut result = 0;
             for _ in 0..n {
@@ -24,6 +31,12 @@ macro_rules! driver {
             }
             result
         }
+        const $entry: Driver = Driver {
+            name: $name,
+            f: &$popcount,
+            blockf: &$drive,
+            divisor: $div
+        };
     }
 }
 
@@ -37,7 +50,7 @@ fn popcount_naive(mut n: u32) -> u32 {
     }
     c
 }
-driver!(drive_naive, popcount_naive);
+driver!(drive_naive, popcount_naive, DRIVER_NAIVE, "popcount_naive", 16);
 
 /* bit-parallelism */
 #[inline(always)]
@@ -52,28 +65,11 @@ fn popcount_8(mut n: u32) -> u32 {
     c += c >> 16;
     c & 0x3f
 }
-driver!(drive_8, popcount_8);
-
-struct Driver {
-    name: &'static str,
-    f: &'static Fn (u32) -> u32,
-    blockf: &'static Fn (u32, &[u32; BLOCKSIZE]) -> u32,
-    divisor: u32
-}
+driver!(drive_8, popcount_8, DRIVER_8, "popcount_8", 4);
 
 const DRIVERS: &[Driver] = &[
-    Driver {
-        name: "popcount_naive",
-        f: &popcount_naive,
-        blockf: &drive_naive,
-        divisor: 16
-    },
-    Driver {
-        name: "popcount_8",
-        f: &popcount_8,
-        blockf: &drive_8,
-        divisor: 4
-    }];
+    DRIVER_NAIVE,
+    DRIVER_8 ];
 
 fn duration_secs(d: time::Duration) -> f64 {
     d.as_secs() as f64 + d.subsec_nanos() as f64 / 1.0e9
