@@ -227,6 +227,14 @@ fn popcount_x86(n: u32) -> u32 {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 driver!(drive_x86, popcount_x86, DRIVER_X86, "popcount_x86", 1);
 
+// Rust native: can get a popcnt, but it isn't likely.
+// See https://users.rust-lang.org/t/4923/3
+#[inline(always)]
+fn popcount_rs(n: u32) -> u32 {
+    n.count_ones()
+}
+driver!(drive_rs, popcount_rs, DRIVER_RS, "popcount_rs", 4);
+
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
     DRIVER_8,
@@ -241,6 +249,7 @@ const DRIVERS: &[Driver] = &[
     DRIVER_TABULAR_16,
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     DRIVER_X86,
+    DRIVER_RS,
 ];
 
 fn test_drivers() -> Vec<&'static Driver> {
