@@ -46,7 +46,7 @@ fn popcount_naive(mut n: u32) -> u32 {
     let mut c = 0;
     while n > 0 {
 	c += n & 1;
-	n >>= 1;
+	n >>= 1
     }
     c
 }
@@ -59,7 +59,7 @@ fn popcount_8(mut n: u32) -> u32 {
     let mut c = n & m;
     for _ in 0..7 {
 	n >>= 1;
-	c += n & m;
+	c += n & m
     }
     c += c >> 8;
     c += c >> 16;
@@ -67,13 +67,26 @@ fn popcount_8(mut n: u32) -> u32 {
 }
 driver!(drive_8, popcount_8, DRIVER_8, "popcount_8", 4);
 
+/* more bit-parallelism */
+#[inline(always)]
+fn popcount_6(mut n: u32) -> u32 {
+    let m = 0x41041041;
+    let mut c = n & m;
+    for _ in 0..5 {
+	n >>= 1;
+	c += n & m
+    }
+    c += c >> 6;
+    c += c >> 12;
+    c += c >> 24;
+    c & 0x3f
+}
+driver!(drive_6, popcount_6, DRIVER_6, "popcount_6", 4);
+
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
-    DRIVER_8 ];
-
-fn duration_secs(d: time::Duration) -> f64 {
-    d.as_secs() as f64 + d.subsec_nanos() as f64 / 1.0e9
-}
+    DRIVER_8,
+    DRIVER_6 ];
 
 fn test_drivers() -> Vec<&'static Driver> {
     let testcases: &[(u32, u32)] = &[
