@@ -196,7 +196,7 @@ them.
 I reorganized this README to be in some sane order and
 cleaned it up quite a lot.
 
-### 2007
+### 2007-11-27
 
 Of the things I tried the one that seemed to be
 second-fastest on my 2.13GHz Core II Duo (generously given
@@ -277,7 +277,7 @@ multiply for the accumulation step at the end.  Amazing that
 it's faster than a couple of shifts and adds on Intel's
 current flagship parts.
 
-### Update: 2007
+### 2007-12
 
 I had said "Now that I think about it, though,
 what's more likely is that the shifts by small powers of two
@@ -292,7 +292,7 @@ false dependencies.)
 On a superscalar RISC processor, I'd actually expect the
 first algorithm to do better.
 
-### 2008
+### 2008-04-30
 
 At the suggestion of Bill Trost, I added 8 and 16-bit
 table-driven popcount implementations.  These perform the
