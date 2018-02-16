@@ -13,7 +13,7 @@ use std::env;
 use std::time;
 
 const BLOCKSIZE: usize = 1000;
-const PREHEAT_BASE: u32 = 50000;
+const PREHEAT_BASE: u32 = 5000;
 
 
 mod prng {
@@ -344,7 +344,7 @@ fn main() {
     let n: u32 = args[1].parse().expect("invalid count");
     let mut rng = prng::PRNG::new();
     let mut randoms = [0u32; BLOCKSIZE];
-    let mut csum = 0u32;
+    let mut csum = 0u64;
     for i in randoms.iter_mut() {
         *i = rng.next()
     }
@@ -354,10 +354,10 @@ fn main() {
     let drivers = test_drivers();
     for driver in drivers {
         let preheat = PREHEAT_BASE / driver.divisor;
-        csum += (*driver.blockf)(preheat, &randoms);
+        csum += (*driver.blockf)(preheat, &randoms) as u64;
         let now = time::Instant::now();
         let nblocks = n / driver.divisor;
-        csum += (*driver.blockf)(nblocks, &randoms);
+        csum += (*driver.blockf)(nblocks, &randoms) as u64;
         let runtime = total_time(now.elapsed());
         let size = nblocks as f64 * BLOCKSIZE as f64;
         println!("{}: {:e} iters in {:.0} msecs for {:.2} nsecs/iter",

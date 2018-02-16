@@ -18,6 +18,8 @@
 #define BLOCKSIZE 1000
 uint32_t randoms[BLOCKSIZE];
 
+#define PREHEAT_BASE (5000)
+
 /* XXX Because the popcount routine wants to be inlined
    in the loop, we need to expand each popcount routine
    in its own driver. */
@@ -428,7 +430,7 @@ main(int argc, char **argv) {
     init_popcount_tables();
     for (d = drivers; d->name; d++)
 	test_driver(d);
-    uint32_t csum = 0;
+    uint64_t csum = 0;
     for (d = drivers; d->name; d++) {
         struct timeval start, end;
         uint32_t elapsed;
@@ -437,7 +439,7 @@ main(int argc, char **argv) {
 	if (!d->blockf)
             continue;
         /* preheat */
-        csum += d->blockf(5000 / d->divisor);
+        csum += d->blockf(PREHEAT_BASE / d->divisor);
         assert(gettimeofday(&start, 0) != -1);
         csum += d->blockf(real_n);
         assert(gettimeofday(&end, 0) != -1);
@@ -446,6 +448,6 @@ main(int argc, char **argv) {
                d->name, (double)real_n * BLOCKSIZE, elapsed,
                elapsed * d->divisor * 1.0e6 / BLOCKSIZE / n);
     }
-    printf("%d\n", csum);
+    printf("%ld\n", csum);
     return 0;
 }
