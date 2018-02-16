@@ -15,5 +15,9 @@ CFLAGS = -Wall -march=native -DX86_POPCNT
 
 popcount: popcount.o
 
+popcount_rs: popcount.rs
+	RUSTFLAGS='-C target-cpu=native' cargo build --release
+	cp target/release/popcount_rs .
+
 clean:
 	-rm -f popcount.o popcount

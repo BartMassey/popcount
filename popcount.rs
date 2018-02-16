@@ -233,7 +233,7 @@ driver!(drive_x86, popcount_x86, DRIVER_X86, "popcount_x86", 1);
 fn popcount_rs(n: u32) -> u32 {
     n.count_ones()
 }
-driver!(drive_rs, popcount_rs, DRIVER_RS, "popcount_rs", 4);
+driver!(drive_rs, popcount_rs, DRIVER_RS, "popcount_rs", 1);
 
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,

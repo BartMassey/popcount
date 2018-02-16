@@ -14,6 +14,10 @@ license-file = "COPYING"
 name = "popcount_rs"
 path = "popcount.rs"
 
+[profile.release]
+codegen-units = 1
+lto = true
+
 [dependencies]
 rand = "*"
 lazy_static = "*"
