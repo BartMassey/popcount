@@ -84,6 +84,32 @@ popcount_6(uint32_t n) {
 DRIVER(6)
 
 
+/* unrolled */
+static inline uint32_t
+popcount_8un(uint32_t n) {
+    uint32_t m = 0x01010101;
+    uint32_t c = (n & m) + ((n >> 1) & m) + ((n >> 2) & m) +
+        ((n >> 3) & m) + ((n >> 4) & m) + ((n >> 5) & m) +
+        ((n >> 6) & m) + ((n >> 7) & m);
+    c += c >> 8;
+    c += c >> 16;
+    return c & 0xff;
+}
+DRIVER(8un)
+
+/* unrolled */
+static inline uint32_t
+popcount_6un(uint32_t n) {
+    uint32_t m = 0x41041041;
+    uint32_t c = (n & m) + ((n >> 1) & m) + ((n >> 2) & m) +
+        ((n >> 3) & m) + ((n >> 4) & m) + ((n >> 5) & m);
+    c += c >> 6;
+    c += c >> 12;
+    c += c >> 24;
+    return c & 0x3f;
+}
+DRIVER(6un)
+
 /* HAKMEM 169 */
 /* 9 ops plus divide, 2 long immediates, 9 stages */
 static inline uint32_t
@@ -121,6 +147,20 @@ popcount_keane(uint32_t mask)
 }
 DRIVER(keane)
 
+
+/* 64-bit HAKMEM variant by Sean Anderson.
+   http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSet64 */
+static inline uint32_t
+popcount_anderson(uint32_t n)
+{
+    uint64_t c = ((n & 0xfff) * 0x1001001001001ULL &
+                  0x84210842108421ULL) % 0x1f;
+    c += (((n & 0xfff000) >> 12) * 0x1001001001001ULL &
+          0x84210842108421ULL) % 0x1f;
+    c += ((n >> 24) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
+    return c;
+}
+DRIVER(anderson)
 
 /* Divide-and-conquer with a ternary stage to reduce masking */
 /* 17 ops, 2 long immediates, 12 stages, 14 alu ops, 11 alu stages  */
