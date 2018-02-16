@@ -301,6 +301,7 @@ struct drivers drivers[] = {
     {"popcount_6", popcount_6, drive_6, 4},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem, 4},
     {"popcount_keane", popcount_keane, drive_keane, 4},
+    {"popcount_anderson", popcount_keane, drive_keane, 4},
     {"popcount_3", popcount_3, drive_3, 4},
     {"popcount_4", popcount_4, drive_4, 4},
     {"popcount_2", popcount_2, drive_2, 4},
