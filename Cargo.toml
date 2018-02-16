@@ -19,5 +19,4 @@ codegen-units = 1
 lto = true
 
 [dependencies]
-rand = "*"
 lazy_static = "*"

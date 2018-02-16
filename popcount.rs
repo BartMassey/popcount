@@ -6,16 +6,45 @@
 
 #![feature(asm)]
 
-extern crate rand;
 #[macro_use]
 extern crate lazy_static;
 
-use rand::Rng;
 use std::env;
 use std::time;
 
 const BLOCKSIZE: usize = 1000;
 const PREHEAT_BASE: u32 = 50000;
+
+
+mod prng {
+    /// Boring and probably bad linear congruential
+    /// pseudo-random number generator to deterministically
+    /// generate a block of "random" bits in a
+    /// cross-platform fashion.
+
+    // Pierre L’Ecuyer
+    // Tables Of Linear Congruential Generators
+    // Of Different Sizes and Good Lattice Structure
+    // Mathematics of Computation
+    // 68(225) Jan 1999 pp. 249-260
+    const M: u64 = 85876534675u64;
+    const A: u64 = 116895888786u64;
+
+    pub struct PRNG {
+        state: u64
+    }
+
+    impl PRNG {
+        pub fn new() -> PRNG {
+            PRNG{ state: A.wrapping_mul(0x123456789abcdef0u64 % M) % M }
+        }
+
+        pub fn next(&mut self) -> u32 {
+            self.state = A.wrapping_mul(self.state) % M;
+            (self.state & (!0u32 as u64)) as u32
+        }
+    }
+}
 
 struct Driver {
     name: &'static str,
@@ -298,11 +327,11 @@ fn main() {
     assert!(has_popcnt_x86());
     let args: Vec<String> = env::args().collect();
     let n: u32 = args[1].parse().expect("invalid count");
-    let mut rng = rand::thread_rng();
+    let mut rng = prng::PRNG::new();
     let mut randoms = [0u32; BLOCKSIZE];
     let mut csum = 0;
     for i in randoms.iter_mut() {
-        *i = rng.gen()
+        *i = rng.next()
     }
     let drivers = test_drivers();
     for driver in drivers {
