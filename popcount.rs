@@ -144,6 +144,20 @@ fn popcount_keane(n: u32) -> u32 {
 }
 driver!(drive_keane, popcount_keane, DRIVER_KEANE, "popcount_keane", 4);
 
+// 64-bit HAKMEM variant by Sean Anderson.
+// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSet64
+#[inline(always)]
+fn popcount_anderson(n: u32) -> u32 {
+    let p = 0x1001001001001u64;
+    let m = 0x84210842108421u64;
+    let mut c = ((n & 0xfffu32) as u64 * p & m) % 0x1fu64;
+    c += (((n & 0xfff000u32) >> 12) as u64 * p & m) % 0x1fu64;
+    c += ((n >> 24) as u64 * p & m) % 0x1fu64;
+    c as u32
+}
+driver!(drive_anderson, popcount_anderson,
+        DRIVER_ANDERSON, "popcount_anderson", 6);
+
 // Divide-and-conquer with a ternary stage to reduce masking
 #[inline(always)]
 fn popcount_3(mut n: u32) -> u32 {
@@ -270,15 +284,16 @@ const DRIVERS: &[Driver] = &[
     DRIVER_6,
     DRIVER_HAKMEM,
     DRIVER_KEANE,
+    DRIVER_ANDERSON,
     DRIVER_3,
     DRIVER_4,
     DRIVER_2,
     DRIVER_MULT,
     DRIVER_TABULAR_8,
     DRIVER_TABULAR_16,
+    DRIVER_RS,
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
     DRIVER_X86,
-    DRIVER_RS,
 ];
 
 fn test_drivers() -> Vec<&'static Driver> {
