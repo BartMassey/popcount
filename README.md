@@ -3,14 +3,17 @@ Copyright &copy; 2016 Bart Massey
 2016-02-20
 
 Here's some implementations of bit population count with
-benchmarks. You can build `popcount` by typing `make`, but
-you should first examine the Makefile and set what you need
-to tune. You'll also need to install
-[Nickle](http://nickle.org) to build the tables.
+benchmarks.
 
-Once you've built `popcount`, run it with a number of
-iterations to bench: 10000 is good to start. It will
-spit out some explanatory numbers.
+You can build the C code with both GCC and Clang and the
+Rust code with Cargo by typing `make all`, but you should
+first examine the Makefile and set what you need to
+tune. You may also just want to build `popcount_gcc` by
+typing `make` depending on your environment.
+
+Once you've built `popcount_gcc` or whichever, run it with a
+number of iterations to bench: 10000 is good to start. It
+will spit out some explanatory numbers.
 
 ## Background
 
