@@ -56,7 +56,7 @@ struct Driver {
 macro_rules! driver {
     ($drive:ident, $popcount:ident, $entry:ident, $name:expr, $div:expr) => {
         fn $drive(n: u32, randoms: &[u32;BLOCKSIZE]) -> u32 {
-            let mut result = 0;
+            let mut result = 0u32;
             for _ in 0..n {
                 for i in randoms.iter() {
                     result += $popcount(i ^ result)
@@ -344,10 +344,13 @@ fn main() {
     let n: u32 = args[1].parse().expect("invalid count");
     let mut rng = prng::PRNG::new();
     let mut randoms = [0u32; BLOCKSIZE];
-    let mut csum = 0;
+    let mut csum = 0u32;
     for i in randoms.iter_mut() {
         *i = rng.next()
     }
+    //for i in randoms.iter() {
+    //    println!("{:08x}", i)
+    //}
     let drivers = test_drivers();
     for driver in drivers {
         let preheat = PREHEAT_BASE / driver.divisor;

@@ -416,6 +416,11 @@ Current Rust numbers, rustc 1.24.0 nightly 2018-01-01:
 
 Up to variances, they're pretty much all the same.
 
+**Update 2018-02-15:** Replaced the C and Rust standard
+random number generators with a common linear congruential
+PRNG seeded deterministically. This gives better run-to-run
+and cross-implementation compatibility.
+
 -----
 
 I have included [slides](pdxbyte-popcount.pdf) from a

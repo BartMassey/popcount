@@ -301,7 +301,7 @@ struct drivers drivers[] = {
     {"popcount_6", popcount_6, drive_6, 4},
     {"popcount_hakmem", popcount_hakmem, drive_hakmem, 4},
     {"popcount_keane", popcount_keane, drive_keane, 4},
-    {"popcount_anderson", popcount_keane, drive_keane, 4},
+    {"popcount_anderson", popcount_keane, drive_keane, 6},
     {"popcount_3", popcount_3, drive_3, 4},
     {"popcount_4", popcount_4, drive_4, 4},
     {"popcount_2", popcount_2, drive_2, 4},
@@ -316,12 +316,36 @@ struct drivers drivers[] = {
 };
 
 
+/* Boring and probably bad linear congruential
+   pseudo-random number generator to deterministically
+   generate a block of "random" bits in a
+   cross-platform fashion. */
+
+/* Pierre L’Ecuyer
+   Tables Of Linear Congruential Generators
+   Of Different Sizes and Good Lattice Structure
+   Mathematics of Computation
+   68(225) Jan 1999 pp. 249-260 */
+#define M (85876534675ULL)
+#define A (116895888786ULL)
+
+uint64_t state = (A * (0x123456789abcdef0ULL % M)) % M;
+
+uint32_t
+next_random(void) {
+    state = (A * state) % M;
+    return state;
+}
+
 void
 init_randoms() {
-    extern long random();
     int i;
     for (i = 0; i < BLOCKSIZE; i++)
-	randoms[i] = random() ^ (random() >> 16) ^ (random() << 16);
+	randoms[i] = next_random();
+#if 0
+    for (i = 0; i < BLOCKSIZE; i++)
+	printf("%08x\n", randoms[i]);
+#endif
 }
 
 
@@ -380,32 +404,7 @@ test_driver(struct drivers *d) {
 
 void
 run_driver(struct drivers *d, int n) {
-    volatile uint32_t result = 0;
-    struct timeval start, end;
-    uint32_t elapsed;
-    uint32_t real_n = n / d->divisor;
-    /* preheat */
-    result += d->blockf(5000 / d->divisor);
-    assert(gettimeofday(&start, 0) != -1);
-    result += d->blockf(real_n);
-    assert(gettimeofday(&end, 0) != -1);
-    elapsed = elapsed_msecs(&start, &end);
-    printf("%s: %g iters in %d msecs for %0.2f nsecs/iter\n",
-	   d->name, (double)real_n * BLOCKSIZE, elapsed,
-	   elapsed * d->divisor * 1.0e6 / BLOCKSIZE / n);
 }
-
-
-void
-run_all(int n) {
-    struct drivers *d;
-    for (d = drivers; d->name; d++)
-	test_driver(d);
-    for (d = drivers; d->name; d++)
-	if (d->blockf)
-	    run_driver(d, n);
-}
-
 
 static void
 init_popcount_tables(void) {
@@ -417,15 +416,36 @@ init_popcount_tables(void) {
 }
 
 int
-main(int argc,
-     char **argv) {
+main(int argc, char **argv) {
     extern long atoi();
     int n = atoi(argv[1]);
+    struct drivers *d;
+
 #ifdef X86_POPCNT
     assert(has_popcnt_x86());
 #endif
     init_randoms();
     init_popcount_tables();
-    run_all(n);
+    for (d = drivers; d->name; d++)
+	test_driver(d);
+    uint32_t csum = 0;
+    for (d = drivers; d->name; d++) {
+        struct timeval start, end;
+        uint32_t elapsed;
+        uint32_t real_n = n / d->divisor;
+
+	if (!d->blockf)
+            continue;
+        /* preheat */
+        csum += d->blockf(5000 / d->divisor);
+        assert(gettimeofday(&start, 0) != -1);
+        csum += d->blockf(real_n);
+        assert(gettimeofday(&end, 0) != -1);
+        elapsed = elapsed_msecs(&start, &end);
+        printf("%s: %g iters in %d msecs for %0.2f nsecs/iter\n",
+               d->name, (double)real_n * BLOCKSIZE, elapsed,
+               elapsed * d->divisor * 1.0e6 / BLOCKSIZE / n);
+    }
+    printf("%d\n", csum);
     return 0;
 }
