@@ -1,14 +1,13 @@
 # Copyright (c) 2018 Bart Massey
-# 
-# [This program is licensed under the GPL version 3 or later.]
-# Please see the file COPYING in the source
+# [This program is licensed under the "MIT License"]
+# Please see the file LICENSE in the source
 # distribution of this software for license terms.
 
 [package]
 name = "popcount"
 version = "0.0.1"
 authors = [ "Bart Massey <bart@cs.pdx.edu>" ]
-license-file = "COPYING"
+license-file = "LICENSE"
 
 [[bin]]
 name = "popcount_rs"

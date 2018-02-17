@@ -1,9 +1,7 @@
 /*
  * Copyright (c) 2007 Bart Massey
- * ALL RIGHTS RESERVED
- * 
- * [This program is licensed under the GPL version 3 or later.]
- * Please see the file COPYING in the source
+ * [This program is licensed under the "MIT License"]
+ * Please see the file LICENSE in the source
  * distribution of this software for license terms.
  */
 

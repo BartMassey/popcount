@@ -1,6 +1,6 @@
 # Popcount
 Copyright &copy; 2007 Bart Massey  
-2018-02-16
+2018-02-17
 
 Here's some implementations of bit population count in C and
 Rust, with benchmarks.
@@ -106,9 +106,8 @@ I gave in March 2014. Enjoy.
 
 ## License
 
-This work is made available under the GPL version 3 or
-later. Please see the file COPYING in this distribution for
-license terms.
+This work is made available under the "MIT License". Please
+see the file LICENSE in this distribution for license terms.
 
 ## Notes and Results
 
@@ -117,11 +116,11 @@ current entry, then older entries in chronological order.
 
 ### Benchmark Results
 
-Performance as of 2018-02-16.  GCC 7.3.0, Clang 4.1.0-10,
-Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
+Performance as of 2018-02-17.  GCC 7.3.0, Clang 4.1.0-10,
+Rustc 1.25.0-nightly 2018-02-04. Intel Core i7-4770K
 (Haswell) CPU @ 3.50GHz. <blockquote>
 
-    $ for i in popcount_gcc popcount_clang popcount_rs ; do echo $i; ./$i 1000000 ;done
+    $ sh run-bench.sh
 
     popcount_gcc
     popcount_naive: 6.25e+07 iters in 926 msecs for 14.82 nsecs/iter
@@ -158,25 +157,25 @@ Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
     50332463787
 
     popcount_rs
-    popcount_naive: 6.25e7 iters in 1068 msecs for 17.09 nsecs/iter
+    popcount_naive: 6.25e7 iters in 1065 msecs for 17.04 nsecs/iter
     popcount_8: 2.5e8 iters in 1206 msecs for 4.82 nsecs/iter
-    popcount_6: 2.5e8 iters in 1158 msecs for 4.63 nsecs/iter
-    popcount_hakmem: 2.5e8 iters in 1335 msecs for 5.34 nsecs/iter
-    popcount_keane: 2.5e8 iters in 1236 msecs for 4.94 nsecs/iter
-    popcount_anderson: 1.66666e8 iters in 1151 msecs for 6.91 nsecs/iter
-    popcount_3: 2.5e8 iters in 1031 msecs for 4.12 nsecs/iter
-    popcount_4: 2.5e8 iters in 1011 msecs for 4.04 nsecs/iter
-    popcount_2: 2.5e8 iters in 1040 msecs for 4.16 nsecs/iter
+    popcount_6: 2.5e8 iters in 1159 msecs for 4.64 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1340 msecs for 5.36 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1238 msecs for 4.95 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 1160 msecs for 6.96 nsecs/iter
+    popcount_3: 2.5e8 iters in 1027 msecs for 4.11 nsecs/iter
+    popcount_4: 2.5e8 iters in 1010 msecs for 4.04 nsecs/iter
+    popcount_2: 2.5e8 iters in 1037 msecs for 4.15 nsecs/iter
     popcount_mult: 2.5e8 iters in 986 msecs for 3.95 nsecs/iter
-    popcount_tabular_8: 2.5e8 iters in 835 msecs for 3.34 nsecs/iter
-    popcount_tabular_16: 2.5e8 iters in 1450 msecs for 5.80 nsecs/iter
-    popcount_rs: 1e9 iters in 1290 msecs for 1.29 nsecs/iter
-    popcount_x86: 1e9 iters in 1292 msecs for 1.29 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 814 msecs for 3.26 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1196 msecs for 4.78 nsecs/iter
+    popcount_rs: 1e9 iters in 1289 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e9 iters in 1291 msecs for 1.29 nsecs/iter
     50332463787
 
 </blockquote>
 
-### 2018-02-16
+### 2018-02-18
 
 I replaced the C and Rust standard random number generators
 with a common linear congruential PRNG seeded
@@ -194,10 +193,13 @@ care. Patches welcome.
 After some work, the C and Rust versions run identical
 benchmarks in identical order and produce an identical total
 popcount. They are thus as comparable as I know how to make
-them.
+them. I added a benchmarking shell script.
 
 I reorganized this README to be in some sane order and
 cleaned it up quite a lot.
+
+I relicensed to MIT. This should make it easier for folks to
+embed these popcounts in random open source things.
 
 ### 2007-11-27
 
