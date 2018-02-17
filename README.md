@@ -119,10 +119,10 @@ current entry, then older entries in chronological order.
 
 Performance as of 2018-02-16.  GCC 7.3.0, Clang 4.1.0-10,
 Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
-(Haswell) CPU @ 3.50GHz.
+(Haswell) CPU @ 3.50GHz. <blockquote>
 
-<blockquote>
     $ for i in popcount_gcc popcount_clang popcount_rs ; do echo $i; ./$i 1000000 ;done
+
     popcount_gcc
     popcount_naive: 6.25e+07 iters in 926 msecs for 14.82 nsecs/iter
     popcount_8: 2.5e+08 iters in 1140 msecs for 4.56 nsecs/iter
@@ -139,6 +139,7 @@ Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
     popcount_cc: 1e+09 iters in 1295 msecs for 1.29 nsecs/iter
     popcount_x86: 1e+09 iters in 1298 msecs for 1.30 nsecs/iter
     50332463787
+
     popcount_clang
     popcount_naive: 6.25e+07 iters in 1025 msecs for 16.40 nsecs/iter
     popcount_8: 2.5e+08 iters in 1182 msecs for 4.73 nsecs/iter
@@ -155,6 +156,7 @@ Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
     popcount_cc: 1e+09 iters in 1299 msecs for 1.30 nsecs/iter
     popcount_x86: 1e+09 iters in 1292 msecs for 1.29 nsecs/iter
     50332463787
+
     popcount_rs
     popcount_naive: 6.25e7 iters in 1068 msecs for 17.09 nsecs/iter
     popcount_8: 2.5e8 iters in 1206 msecs for 4.82 nsecs/iter
@@ -171,6 +173,7 @@ Rustc 1.24.0-nightly 2018-01-01. Intel Core i7-4770K
     popcount_rs: 1e9 iters in 1290 msecs for 1.29 nsecs/iter
     popcount_x86: 1e9 iters in 1292 msecs for 1.29 nsecs/iter
     50332463787
+
 </blockquote>
 
 ### 2018-02-16
