@@ -17,6 +17,7 @@ path = "popcount.rs"
 [profile.release]
 codegen-units = 1
 lto = true
+opt-level = 3
 
 [dependencies]
 lazy_static = "*"

@@ -23,8 +23,10 @@ all: $(TARGETS)
 popcount_clang: popcount.c
 	$(CLANG) $(CFLAGS) -o popcount_clang popcount.c
 
-popcount_rs: popcount.rs
+target/release/popcount_rs: popcount.rs
 	RUSTFLAGS='-C target-cpu=native' cargo build --release
+
+popcount_rs: target/release/popcount_rs
 	cp target/release/popcount_rs .
 
 clean:
