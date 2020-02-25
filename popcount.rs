@@ -47,8 +47,8 @@ mod prng {
 
 struct Driver {
     name: &'static str,
-    f: &'static Fn (u32) -> u32,
-    blockf: &'static Fn (u32, &[u32; BLOCKSIZE]) -> u32,
+    f: &'static dyn Fn (u32) -> u32,
+    blockf: &'static dyn Fn (u32, &[u32; BLOCKSIZE]) -> u32,
     divisor: u32
 }
 
