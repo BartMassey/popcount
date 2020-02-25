@@ -14,10 +14,10 @@ CFLAGS = -Wall -march=native -DX86_POPCNT
 
 TARGETS = popcount_gcc popcount_clang popcount_rs
 
+all: $(TARGETS)
+
 popcount_gcc: popcount.c
 	$(GCC) $(CFLAGS) -o popcount_gcc popcount.c
-
-all: $(TARGETS)
 
 popcount_clang: popcount.c
 	$(CLANG) $(CFLAGS) -o popcount_clang popcount.c
