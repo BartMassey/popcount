@@ -1,6 +1,6 @@
 # Popcount
 Copyright &copy; 2007 Bart Massey  
-2018-02-17
+2020-02-25
 
 Here's some implementations of bit population count in C and
 Rust, with benchmarks.
@@ -47,35 +47,40 @@ see below.
 ## Build and Run
 
 You can build the C code with both GCC and Clang and the
-Rust code with Cargo by typing `make all`, but you should
+Rust code with Cargo by typing `make`, but you should
 first examine the Makefile and set what you need to
-tune. You may also just want to build `popcount_gcc` by
-typing `make` depending on your environment.
+tune. Depending on your environment, you might just want to
+build specific binaries.
 
 Once you've built `popcount_gcc` or whichever, run it with a
-number of iterations to bench: 10000 is good to start. It
+number of iterations to bench: 100000 is good to start. It
 will spit out some explanatory numbers.
 
 ## Advice
 
-* If you want machine-independent and don't care *too* much
-  about speed, use the famous `popcount_2`. It's fast
-  enough, familiar and truly portable.
+* If you need predictable speed, use `__builtin_popcount()`
+  (GCC, Clang) or `count_ones()` (Rust). Your machine might
+  have a popcount instruction (most modern ones finally do),
+  and this will use it if present.  C code will be portable
+  only to GCC-compatible C compilers. Rust code will
+  currently only get a speedup when compiled with
+  `--cpu-type native`. All compilers bench reasonably fast
+  on my box without a popcount instruction available; looks
+  like they are using `popcount_2` or similar, but
+  generating slightly better code. (I haven't investigated
+  what they are actually doing.)
+
+* If you want true machine-independence and don't care *too*
+  much about speed, use the famous `popcount_2`. It's fast
+  enough, familiar and completely portable.
 
 * Use `popcount_tabular_8` if you're willing to burn some
-  cache (not much) and want a slight but portable
-  speedup. Also if you're on some machine without a barrel
-  shifter, this can be adapted to not do any shifts without
-  too much work at the expense of hitting cache. (Do
-  byte reads from the input variable.)
+  cache (not much) and want a slight but portable speedup
+  over `popcount_2`. Also if you're on some machine without
+  a barrel shifter, this can be adapted to not do any shifts
+  without too much work at the expense of hitting
+  memory. (Do byte reads from the input variable.)
 
-* If you need all the speed, and your machine might have a popcount
-  instruction, use `__builtin_popcount()` (GCC, Clang) or `count_ones()`
-  (Rust). C code will be portable only to GCC-compatible
-  C compilers. Rust code will currently only get a speedup
-  on nightly (1.24.0) and when compiled with
-  `--cpu-type native`. The Rust code benches as something
-  reasonable without `popcntl`; haven't tried the C code yet.
 
 ## Future Improvements
 
@@ -116,64 +121,75 @@ current entry, then older entries in chronological order.
 
 ### Benchmark Results
 
-Performance as of 2018-02-17.  GCC 7.3.0, Clang 4.1.0-10,
-Rustc 1.25.0-nightly 2018-02-04. Intel Core i7-4770K
+Performance as of 2020-02-25.  GCC 9.2.1, Clang 8.0.1-7,
+rustc 1.43.0-nightly 2020-02-24. Intel Core i7-4770K
 (Haswell) CPU @ 3.50GHz. <blockquote>
 
     $ sh run-bench.sh
 
     popcount_gcc
-    popcount_naive: 6.25e+07 iters in 926 msecs for 14.82 nsecs/iter
-    popcount_8: 2.5e+08 iters in 1140 msecs for 4.56 nsecs/iter
+    popcount_naive: 6.25e+07 iters in 929 msecs for 14.86 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1137 msecs for 4.55 nsecs/iter
     popcount_6: 2.5e+08 iters in 1096 msecs for 4.38 nsecs/iter
-    popcount_hakmem: 2.5e+08 iters in 1385 msecs for 5.54 nsecs/iter
-    popcount_keane: 2.5e+08 iters in 1425 msecs for 5.70 nsecs/iter
-    popcount_anderson: 1.66666e+08 iters in 950 msecs for 5.70 nsecs/iter
-    popcount_3: 2.5e+08 iters in 1010 msecs for 4.04 nsecs/iter
-    popcount_4: 2.5e+08 iters in 1022 msecs for 4.09 nsecs/iter
-    popcount_2: 2.5e+08 iters in 1041 msecs for 4.16 nsecs/iter
-    popcount_mult: 2.5e+08 iters in 982 msecs for 3.93 nsecs/iter
-    popcount_tabular_8: 2.5e+08 iters in 775 msecs for 3.10 nsecs/iter
-    popcount_tabular_16: 2.5e+08 iters in 1478 msecs for 5.91 nsecs/iter
-    popcount_cc: 1e+09 iters in 1295 msecs for 1.29 nsecs/iter
-    popcount_x86: 1e+09 iters in 1298 msecs for 1.30 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1361 msecs for 5.44 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1427 msecs for 5.71 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 953 msecs for 5.72 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1088 msecs for 4.35 nsecs/iter
+    popcount_4: 2.5e+08 iters in 1012 msecs for 4.05 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1040 msecs for 4.16 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 985 msecs for 3.94 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 776 msecs for 3.10 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1703 msecs for 6.81 nsecs/iter
+    popcount_cc: 1e+09 iters in 1294 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e+09 iters in 1292 msecs for 1.29 nsecs/iter
     50332463787
 
     popcount_clang
     popcount_naive: 6.25e+07 iters in 1025 msecs for 16.40 nsecs/iter
-    popcount_8: 2.5e+08 iters in 1182 msecs for 4.73 nsecs/iter
-    popcount_6: 2.5e+08 iters in 1081 msecs for 4.32 nsecs/iter
-    popcount_hakmem: 2.5e+08 iters in 1334 msecs for 5.34 nsecs/iter
-    popcount_keane: 2.5e+08 iters in 1253 msecs for 5.01 nsecs/iter
-    popcount_anderson: 1.66666e+08 iters in 835 msecs for 5.01 nsecs/iter
-    popcount_3: 2.5e+08 iters in 1024 msecs for 4.10 nsecs/iter
-    popcount_4: 2.5e+08 iters in 1008 msecs for 4.03 nsecs/iter
-    popcount_2: 2.5e+08 iters in 1035 msecs for 4.14 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1983 msecs for 7.93 nsecs/iter
+    popcount_6: 2.5e+08 iters in 1084 msecs for 4.34 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1336 msecs for 5.34 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1259 msecs for 5.04 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 836 msecs for 5.02 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1027 msecs for 4.11 nsecs/iter
+    popcount_4: 2.5e+08 iters in 1018 msecs for 4.07 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1040 msecs for 4.16 nsecs/iter
     popcount_mult: 2.5e+08 iters in 987 msecs for 3.95 nsecs/iter
-    popcount_tabular_8: 2.5e+08 iters in 787 msecs for 3.15 nsecs/iter
-    popcount_tabular_16: 2.5e+08 iters in 1254 msecs for 5.02 nsecs/iter
-    popcount_cc: 1e+09 iters in 1299 msecs for 1.30 nsecs/iter
-    popcount_x86: 1e+09 iters in 1292 msecs for 1.29 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 778 msecs for 3.11 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1664 msecs for 6.66 nsecs/iter
+    popcount_cc: 1e+09 iters in 1294 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e+09 iters in 1297 msecs for 1.30 nsecs/iter
     50332463787
 
     popcount_rs
-    popcount_naive: 6.25e7 iters in 1065 msecs for 17.04 nsecs/iter
-    popcount_8: 2.5e8 iters in 1206 msecs for 4.82 nsecs/iter
-    popcount_6: 2.5e8 iters in 1159 msecs for 4.64 nsecs/iter
-    popcount_hakmem: 2.5e8 iters in 1340 msecs for 5.36 nsecs/iter
-    popcount_keane: 2.5e8 iters in 1238 msecs for 4.95 nsecs/iter
-    popcount_anderson: 1.66666e8 iters in 1160 msecs for 6.96 nsecs/iter
-    popcount_3: 2.5e8 iters in 1027 msecs for 4.11 nsecs/iter
-    popcount_4: 2.5e8 iters in 1010 msecs for 4.04 nsecs/iter
-    popcount_2: 2.5e8 iters in 1037 msecs for 4.15 nsecs/iter
-    popcount_mult: 2.5e8 iters in 986 msecs for 3.95 nsecs/iter
-    popcount_tabular_8: 2.5e8 iters in 814 msecs for 3.26 nsecs/iter
-    popcount_tabular_16: 2.5e8 iters in 1196 msecs for 4.78 nsecs/iter
-    popcount_rs: 1e9 iters in 1289 msecs for 1.29 nsecs/iter
-    popcount_x86: 1e9 iters in 1291 msecs for 1.29 nsecs/iter
+    popcount_naive: 6.25e7 iters in 1052 msecs for 16.84 nsecs/iter
+    popcount_8: 2.5e8 iters in 2065 msecs for 8.26 nsecs/iter
+    popcount_6: 2.5e8 iters in 1095 msecs for 4.38 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1345 msecs for 5.38 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1290 msecs for 5.16 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 1170 msecs for 7.02 nsecs/iter
+    popcount_3: 2.5e8 iters in 1030 msecs for 4.12 nsecs/iter
+    popcount_4: 2.5e8 iters in 1009 msecs for 4.04 nsecs/iter
+    popcount_2: 2.5e8 iters in 1039 msecs for 4.16 nsecs/iter
+    popcount_mult: 2.5e8 iters in 989 msecs for 3.96 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 869 msecs for 3.48 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1387 msecs for 5.55 nsecs/iter
+    popcount_rs: 1e9 iters in 1297 msecs for 1.30 nsecs/iter
+    popcount_x86: 1e9 iters in 1300 msecs for 1.30 nsecs/iter
     50332463787
 
 </blockquote>
+
+### 2020-02-25
+
+Mostly Rust changes. I brought the Rust code up to 2018
+Edition, fixed some silliness in the `Cargo.toml`, and added
+the `Cargo.lock` for reproducibility. I also fixed a nit in
+the driver macro that, while not performance-related,
+reduced the code ugliness slightly.
+
+Finally, I cleaned up the `README.md` a bit to reflect
+current reality.
 
 ### 2018-02-18
 
