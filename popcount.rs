@@ -53,7 +53,7 @@ struct Driver {
 }
 
 macro_rules! driver {
-    ($drive:ident, $popcount:ident, $entry:ident, $name:expr, $div:expr) => {
+    ($drive:ident, $popcount:ident, $entry:ident, $div:expr) => {
         fn $drive(n: u32, randoms: &[u32;BLOCKSIZE]) -> u32 {
             let mut result = 0u32;
             for _ in 0..n {
@@ -64,7 +64,7 @@ macro_rules! driver {
             result
         }
         const $entry: Driver = Driver {
-            name: $name,
+            name: stringify!($popcount),
             f: &$popcount,
             blockf: &$drive,
             divisor: $div
@@ -82,7 +82,7 @@ fn popcount_naive(mut n: u32) -> u32 {
     }
     c
 }
-driver!(drive_naive, popcount_naive, DRIVER_NAIVE, "popcount_naive", 16);
+driver!(drive_naive, popcount_naive, DRIVER_NAIVE, 16);
 
 // bit-parallelism
 #[inline(always)]
@@ -97,7 +97,7 @@ fn popcount_8(mut n: u32) -> u32 {
     c += c >> 16;
     c & 0x3f
 }
-driver!(drive_8, popcount_8, DRIVER_8, "popcount_8", 4);
+driver!(drive_8, popcount_8, DRIVER_8, 4);
 
 // more bit-parallelism
 #[inline(always)]
@@ -113,7 +113,7 @@ fn popcount_6(mut n: u32) -> u32 {
     c += c >> 24;
     c & 0x3f
 }
-driver!(drive_6, popcount_6, DRIVER_6, "popcount_6", 4);
+driver!(drive_6, popcount_6, DRIVER_6, 4);
 
 // HAKMEM 169
 #[inline(always)]
@@ -122,7 +122,7 @@ fn popcount_hakmem(n: u32) -> u32 {
     let z = n - y - ((y >>1) & 0o33333333333);
     ((z + (z >> 3)) & 0o30707070707) % 63
 }
-driver!(drive_hakmem, popcount_hakmem, DRIVER_HAKMEM, "popcount_hakmem", 4);
+driver!(drive_hakmem, popcount_hakmem, DRIVER_HAKMEM, 4);
 
 // Joe Keane, sci.math.num-analysis, 9 July 1995,
 // as cited by an addendum to Hacker's Delight.
@@ -141,7 +141,7 @@ fn popcount_keane(n: u32) -> u32 {
     let z = n - y - ((y >>1) & 0o33333333333);
     remu63((z + (z >> 3)) & 0o30707070707)
 }
-driver!(drive_keane, popcount_keane, DRIVER_KEANE, "popcount_keane", 4);
+driver!(drive_keane, popcount_keane, DRIVER_KEANE, 4);
 
 // 64-bit HAKMEM variant by Sean Anderson.
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSet64
@@ -154,8 +154,7 @@ fn popcount_anderson(n: u32) -> u32 {
     c += ((n >> 24) as u64 * p & m) % 0x1fu64;
     c as u32
 }
-driver!(drive_anderson, popcount_anderson,
-        DRIVER_ANDERSON, "popcount_anderson", 6);
+driver!(drive_anderson, popcount_anderson, DRIVER_ANDERSON, 6);
 
 // Divide-and-conquer with a ternary stage to reduce masking
 #[inline(always)]
@@ -167,7 +166,7 @@ fn popcount_3(mut n: u32) -> u32 {
     n += n >> 6;
     (n + (n >> 12) + (n >> 24)) & 0x3f
 }
-driver!(drive_3, popcount_3, DRIVER_3, "popcount_3", 4);
+driver!(drive_3, popcount_3, DRIVER_3, 4);
 
 // Divide-and-conquer with a quaternary stage to reduce masking
 // and provide mostly power-of-two shifts
@@ -180,7 +179,7 @@ fn popcount_4(mut n: u32) -> u32 {
     n += n >> 8;
     (n + (n >> 16)) & 0x3f
 }
-driver!(drive_4, popcount_4, DRIVER_4, "popcount_4", 4);
+driver!(drive_4, popcount_4, DRIVER_4, 4);
 
 // Classic binary divide-and-conquer popcount.
 // This is popcount_2() from
@@ -196,7 +195,7 @@ fn popcount_2(mut n: u32) -> u32 {
     n += n >>  8;
     return (n + (n >> 16)) & 0x3f;
 }
-driver!(drive_2, popcount_2, DRIVER_2, "popcount_2", 4);
+driver!(drive_2, popcount_2, DRIVER_2, 4);
 
 // Popcount using multiply.
 // This is popcount_3() from
@@ -212,7 +211,7 @@ fn popcount_mult(mut n: u32) -> u32 {
     n = (n + (n >> 4)) & m4;  // put count of each 8 bits in
     (n * h01) >> 24  // returns left 8 bits of n + (n<<8) + ...
 }
-driver!(drive_mult, popcount_mult, DRIVER_MULT, "popcount_mult", 4);
+driver!(drive_mult, popcount_mult, DRIVER_MULT, 4);
 
 // 8-bit popcount table, filled at first use.
 lazy_static! {
@@ -228,8 +227,7 @@ fn popcount_tabular_8(n: u32) -> u32 {
     POPCOUNT_TABLE_8[(n >> 16) as u8 as usize] +
     POPCOUNT_TABLE_8[(n >> 24) as usize]
 }
-driver!(drive_tabular_8, popcount_tabular_8, DRIVER_TABULAR_8,
-        "popcount_tabular_8", 4);
+driver!(drive_tabular_8, popcount_tabular_8, DRIVER_TABULAR_8, 4);
 
 // 16-bit popcount table, filled at first use.
 lazy_static! {
@@ -243,8 +241,7 @@ fn popcount_tabular_16(n: u32) -> u32 {
     POPCOUNT_TABLE_16[n as u16 as usize] +
     POPCOUNT_TABLE_16[(n >> 16) as usize]
 }
-driver!(drive_tabular_16, popcount_tabular_16, DRIVER_TABULAR_16,
-        "popcount_tabular_16", 4);
+driver!(drive_tabular_16, popcount_tabular_16, DRIVER_TABULAR_16, 4);
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 fn has_popcnt_x86() -> bool {
@@ -267,7 +264,7 @@ fn popcount_x86(n: u32) -> u32 {
     result
 }
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-driver!(drive_x86, popcount_x86, DRIVER_X86, "popcount_x86", 1);
+driver!(drive_x86, popcount_x86, DRIVER_X86, 1);
 
 // Rust native: can get a popcnt insn, but only via RUSTFLAGS.
 // See https://users.rust-lang.org/t/4923/3 and the Makefile.
@@ -275,7 +272,7 @@ driver!(drive_x86, popcount_x86, DRIVER_X86, "popcount_x86", 1);
 fn popcount_rs(n: u32) -> u32 {
     n.count_ones()
 }
-driver!(drive_rs, popcount_rs, DRIVER_RS, "popcount_rs", 1);
+driver!(drive_rs, popcount_rs, DRIVER_RS, 1);
 
 const DRIVERS: &[Driver] = &[
     DRIVER_NAIVE,
