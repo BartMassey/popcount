@@ -3,7 +3,7 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-#![feature(llvm_asm)]
+#![feature(asm)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -246,9 +246,17 @@ driver!(drive_tabular_16, popcount_tabular_16, DRIVER_TABULAR_16, 4);
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 fn has_popcnt_x86() -> bool {
     let eax = 0x01u32;
-    let ecx: u32;
+    let mut ecx: u32;
     unsafe {
-        llvm_asm!("cpuid" : "={ecx}" (ecx) : "{eax}" (eax) : "ebx", "edx")
+        asm!(
+            "cpuid",
+            lateout("ecx") ecx,
+            in("eax") eax,
+            lateout("eax") _,
+            lateout("ebx") _,
+            lateout("edx") _,
+            options(preserves_flags),
+        );
     }
     ((ecx >> 23) & 1) == 1
 }
@@ -257,9 +265,14 @@ fn has_popcnt_x86() -> bool {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[inline(always)]
 fn popcount_x86(n: u32) -> u32 {
-    let result: u32;
+    let mut result: u32;
     unsafe {
-        llvm_asm!("popcntl $1, $0" : "=r" (result) : "r" (n) : "cc")
+        asm!(
+            "popcntl {0:e}, {1:e}",
+            in(reg) n,
+            lateout(reg) result,
+            options(att_syntax),
+        );
     }
     result
 }
