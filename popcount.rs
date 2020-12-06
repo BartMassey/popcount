@@ -3,7 +3,7 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-#![feature(asm)]
+#![feature(llvm_asm)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -248,7 +248,7 @@ fn has_popcnt_x86() -> bool {
     let eax = 0x01u32;
     let ecx: u32;
     unsafe {
-        asm!("cpuid" : "={ecx}" (ecx) : "{eax}" (eax) : "ebx", "edx")
+        llvm_asm!("cpuid" : "={ecx}" (ecx) : "{eax}" (eax) : "ebx", "edx")
     }
     ((ecx >> 23) & 1) == 1
 }
@@ -259,7 +259,7 @@ fn has_popcnt_x86() -> bool {
 fn popcount_x86(n: u32) -> u32 {
     let result: u32;
     unsafe {
-        asm!("popcntl $1, $0" : "=r" (result) : "r" (n) : "cc")
+        llvm_asm!("popcntl $1, $0" : "=r" (result) : "r" (n) : "cc")
     }
     result
 }
