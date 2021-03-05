@@ -188,9 +188,12 @@ a noticeable winner over `popcount_2` here. Also of note is
 the terrible performance of Rust on the tabular popcounts —
 not sure what's going on there.
 
-Apparently maybe possibly missing a `POPCNT` instruction on
-this hardware. Note that the compiler builtins are fairly
-dramatically worse than `popcount_4`.
+There's a `CNT` instruction on this hardware, but it's
+provided by the Neon SIMD vector processor — the work to get
+a 32-bit value out of a scalar register and into a vector
+register, then get the count out, is substantial. As a
+result, the compiler builtins are fairly dramatically worse
+than `popcount_4`.
 
 ### 2020-02-25
 
