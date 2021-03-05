@@ -1,6 +1,6 @@
 # Popcount
 Copyright &copy; 2007 Bart Massey  
-2020-02-25
+2021-03-05
 
 Here's some implementations of bit population count in C and
 Rust, with benchmarks.
@@ -120,6 +120,79 @@ This is a log of work on the project.  Most recent numbers,
 current entry, then older entries in chronological order.
 
 ### Benchmark Results
+
+### 2021-03-05
+
+Performance on Raspberry Pi 400 as of 2021-03-05. GCC
+10.2.1, Clang 11.0.1-2, rustc 1.52.0-nightly
+2021-03-04. Debian 5.10.0-3-arm64. <blockquote>
+
+    $ sh run-bench.sh
+
+    popcount_gcc
+    popcount_naive: 6.25e+07 iters in 2652 msecs for 42.43 nsecs/iter
+    popcount_8: 2.5e+08 iters in 2643 msecs for 10.57 nsecs/iter
+    popcount_6: 2.5e+08 iters in 2365 msecs for 9.46 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 2919 msecs for 11.68 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 2780 msecs for 11.12 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 1854 msecs for 11.12 nsecs/iter
+    popcount_3: 2.5e+08 iters in 2364 msecs for 9.46 nsecs/iter
+    popcount_4: 2.5e+08 iters in 2226 msecs for 8.90 nsecs/iter
+    popcount_2: 2.5e+08 iters in 2224 msecs for 8.90 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 3058 msecs for 12.23 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 1670 msecs for 6.68 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 4662 msecs for 18.65 nsecs/iter
+    popcount_cc: 1e+09 iters in 12232 msecs for 12.23 nsecs/iter
+    47127364941
+
+    popcount_clang
+    popcount_naive: 6.25e+07 iters in 2683 msecs for 42.93 nsecs/iter
+    popcount_8: 2.5e+08 iters in 2226 msecs for 8.90 nsecs/iter
+    popcount_6: 2.5e+08 iters in 2225 msecs for 8.90 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 2780 msecs for 11.12 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 2919 msecs for 11.68 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 1946 msecs for 11.68 nsecs/iter
+    popcount_3: 2.5e+08 iters in 2223 msecs for 8.89 nsecs/iter
+    popcount_4: 2.5e+08 iters in 2085 msecs for 8.34 nsecs/iter
+    popcount_2: 2.5e+08 iters in 2224 msecs for 8.90 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 3058 msecs for 12.23 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 1391 msecs for 5.56 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 4652 msecs for 18.61 nsecs/iter
+    popcount_cc: 1e+09 iters in 12231 msecs for 12.23 nsecs/iter
+    47127364941
+
+    popcount_rs
+    popcount_naive: 6.25e7 iters in 2628 msecs for 42.04 nsecs/iter
+    popcount_8: 2.5e8 iters in 2226 msecs for 8.91 nsecs/iter
+    popcount_6: 2.5e8 iters in 2226 msecs for 8.90 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 2780 msecs for 11.12 nsecs/iter
+    popcount_keane: 2.5e8 iters in 2920 msecs for 11.68 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 3522 msecs for 21.13 nsecs/iter
+    popcount_3: 2.5e8 iters in 2224 msecs for 8.90 nsecs/iter
+    popcount_4: 2.5e8 iters in 2085 msecs for 8.34 nsecs/iter
+    popcount_2: 2.5e8 iters in 2224 msecs for 8.90 nsecs/iter
+    popcount_mult: 2.5e8 iters in 3061 msecs for 12.24 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 13344 msecs for 53.37 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 11525 msecs for 46.10 nsecs/iter
+    popcount_rs: 1e9 iters in 12245 msecs for 12.24 nsecs/iter
+    47127364941
+
+</blockquote>
+
+The overall timings make sense inasmuch as the Raspberry Pi
+is clocked about half as fast as the Intel box benchmarked
+here.
+
+Interestingly, of the non-tabular popcounts, `popcount_4` is
+a noticeable winner over `popcount_2` here. Also of note is
+the terrible performance of Rust on the tabular popcounts —
+not sure what's going on there.
+
+Apparently maybe possibly missing a `POPCNT` instruction on
+this hardware. Note that the compiler builtins are fairly
+dramatically worse than `popcount_4`.
+
+### 2020-02-25
 
 Performance as of 2020-02-25.  GCC 9.2.1, Clang 8.0.1-7,
 rustc 1.43.0-nightly 2020-02-24. Intel Core i7-4770K

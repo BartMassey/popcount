@@ -10,17 +10,18 @@ CLANG = clang -O3
 # unless you are on a Nehalem or later Intel processor. Some
 # checking will be done on Intel/AMD parts, but things
 # won't even compile (assemble) on non-x86.
-CFLAGS = -Wall -march=native -DX86_POPCNT
+GCCFLAGS = -Wall -march=native -DX86_POPCNT
+CLANGFLAGS = -Wall -march=native -DX86_POPCNT
 
 TARGETS = popcount_gcc popcount_clang popcount_rs
 
 all: $(TARGETS)
 
 popcount_gcc: popcount.c
-	$(GCC) $(CFLAGS) -o popcount_gcc popcount.c
+	$(GCC) $(GCCFLAGS) -o popcount_gcc popcount.c
 
 popcount_clang: popcount.c
-	$(CLANG) $(CFLAGS) -o popcount_clang popcount.c
+	$(CLANG) $(CLANGFLAGS) -o popcount_clang popcount.c
 
 target/release/popcount_rs: popcount.rs
 	RUSTFLAGS='-C target-cpu=native' cargo build --release
