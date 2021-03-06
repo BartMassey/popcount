@@ -181,6 +181,69 @@ Interestingly, the multiply-based popcount benches as fast
 as the `POPCNT` instruction on this hardware! I have a hard
 time believing this — explanations welcome.
 
+---
+
+Performance on desktop with Intel Core i7-4770K (Haswell)
+3.50GHz processor, as of 2021-03-05.  GCC 10.2.1-6, Clang
+11.0.1-2, rustc 1.52.0-nightly 2021-03-05. Debian
+5.10.12-1. <blockquote>
+
+    popcount_gcc
+    popcount_naive: 6.25e+07 iters in 1015 msecs for 16.24 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1132 msecs for 4.53 nsecs/iter
+    popcount_6: 2.5e+08 iters in 1093 msecs for 4.37 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1356 msecs for 5.42 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1422 msecs for 5.69 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 948 msecs for 5.69 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1080 msecs for 4.32 nsecs/iter
+    popcount_4: 2.5e+08 iters in 995 msecs for 3.98 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1036 msecs for 4.14 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 323 msecs for 1.29 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 774 msecs for 3.10 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1626 msecs for 6.50 nsecs/iter
+    popcount_cc: 1e+09 iters in 1290 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e+09 iters in 1290 msecs for 1.29 nsecs/iter
+
+    popcount_clang
+    popcount_naive: 6.25e+07 iters in 974 msecs for 15.58 nsecs/iter
+    popcount_8: 2.5e+08 iters in 1178 msecs for 4.71 nsecs/iter
+    popcount_6: 2.5e+08 iters in 1079 msecs for 4.32 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1332 msecs for 5.33 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1309 msecs for 5.24 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 872 msecs for 5.23 nsecs/iter
+    popcount_3: 2.5e+08 iters in 1022 msecs for 4.09 nsecs/iter
+    popcount_4: 2.5e+08 iters in 1013 msecs for 4.05 nsecs/iter
+    popcount_2: 2.5e+08 iters in 1004 msecs for 4.02 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 323 msecs for 1.29 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 774 msecs for 3.10 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1479 msecs for 5.92 nsecs/iter
+    popcount_cc: 1e+09 iters in 1289 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e+09 iters in 1288 msecs for 1.29 nsecs/iter
+
+    popcount_rs
+    popcount_naive: 6.25e7 iters in 1152 msecs for 18.44 nsecs/iter
+    popcount_8: 2.5e8 iters in 1187 msecs for 4.75 nsecs/iter
+    popcount_6: 2.5e8 iters in 1086 msecs for 4.34 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1332 msecs for 5.33 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1284 msecs for 5.14 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 1148 msecs for 6.89 nsecs/iter
+    popcount_3: 2.5e8 iters in 1026 msecs for 4.10 nsecs/iter
+    popcount_4: 2.5e8 iters in 1007 msecs for 4.03 nsecs/iter
+    popcount_2: 2.5e8 iters in 1036 msecs for 4.14 nsecs/iter
+    popcount_mult: 2.5e8 iters in 322 msecs for 1.29 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 864 msecs for 3.45 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1585 msecs for 6.34 nsecs/iter
+    popcount_rs: 1e9 iters in 1287 msecs for 1.29 nsecs/iter
+    popcount_x86: 1e9 iters in 1288 msecs for 1.29 nsecs/iter
+
+</blockquote>
+
+Again, `popcount_mult` is unreasonably fast, a big speedup
+since a year ago. Did GCC catch this pattern and optimize
+it? Is something else going on?
+
+---
+
 Performance on Raspberry Pi 400 as of 2021-03-05. GCC
 10.2.1, Clang 11.0.1-2, rustc 1.52.0-nightly
 2021-03-04. Debian 5.10.0-3-arm64. <blockquote>
