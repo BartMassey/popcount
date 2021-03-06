@@ -143,7 +143,6 @@ Performance on Raspberry Pi 400 as of 2021-03-05. GCC
     popcount_tabular_8: 2.5e+08 iters in 1670 msecs for 6.68 nsecs/iter
     popcount_tabular_16: 2.5e+08 iters in 4662 msecs for 18.65 nsecs/iter
     popcount_cc: 1e+09 iters in 12232 msecs for 12.23 nsecs/iter
-    47127364941
 
     popcount_clang
     popcount_naive: 6.25e+07 iters in 2683 msecs for 42.93 nsecs/iter
@@ -159,7 +158,6 @@ Performance on Raspberry Pi 400 as of 2021-03-05. GCC
     popcount_tabular_8: 2.5e+08 iters in 1391 msecs for 5.56 nsecs/iter
     popcount_tabular_16: 2.5e+08 iters in 4652 msecs for 18.61 nsecs/iter
     popcount_cc: 1e+09 iters in 12231 msecs for 12.23 nsecs/iter
-    47127364941
 
     popcount_rs
     popcount_naive: 6.25e7 iters in 2628 msecs for 42.04 nsecs/iter
@@ -175,7 +173,6 @@ Performance on Raspberry Pi 400 as of 2021-03-05. GCC
     popcount_tabular_8: 2.5e8 iters in 13344 msecs for 53.37 nsecs/iter
     popcount_tabular_16: 2.5e8 iters in 11525 msecs for 46.10 nsecs/iter
     popcount_rs: 1e9 iters in 12245 msecs for 12.24 nsecs/iter
-    47127364941
 
 </blockquote>
 
