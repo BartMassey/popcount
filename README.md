@@ -123,11 +123,67 @@ current entry, then older entries in chronological order.
 
 ### 2021-03-05
 
+Performance on desktop with Ryzen-9 3900X 4.6GHz processor,
+as of 2021-03-05.  GCC 10.2.1-6, Clang 11.0.1-2,
+rustc 1.52.0-nightly 2021-02-10. Debian 5.10.13-1. <blockquote>
+
+    popcount_gcc
+    popcount_naive: 6.25e+07 iters in 728 msecs for 11.65 nsecs/iter
+    popcount_8: 2.5e+08 iters in 889 msecs for 3.56 nsecs/iter
+    popcount_6: 2.5e+08 iters in 922 msecs for 3.69 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1145 msecs for 4.58 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1211 msecs for 4.84 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 814 msecs for 4.88 nsecs/iter
+    popcount_3: 2.5e+08 iters in 852 msecs for 3.41 nsecs/iter
+    popcount_4: 2.5e+08 iters in 826 msecs for 3.30 nsecs/iter
+    popcount_2: 2.5e+08 iters in 871 msecs for 3.48 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 164 msecs for 0.66 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 651 msecs for 2.60 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1022 msecs for 4.09 nsecs/iter
+    popcount_cc: 1e+09 iters in 655 msecs for 0.66 nsecs/iter
+    popcount_x86: 1e+09 iters in 655 msecs for 0.66 nsecs/iter
+
+    popcount_clang
+    popcount_naive: 6.25e+07 iters in 737 msecs for 11.79 nsecs/iter
+    popcount_8: 2.5e+08 iters in 970 msecs for 3.88 nsecs/iter
+    popcount_6: 2.5e+08 iters in 945 msecs for 3.78 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1149 msecs for 4.60 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1219 msecs for 4.88 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 814 msecs for 4.88 nsecs/iter
+    popcount_3: 2.5e+08 iters in 905 msecs for 3.62 nsecs/iter
+    popcount_4: 2.5e+08 iters in 900 msecs for 3.60 nsecs/iter
+    popcount_2: 2.5e+08 iters in 912 msecs for 3.65 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 171 msecs for 0.68 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 639 msecs for 2.56 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1121 msecs for 4.48 nsecs/iter
+    popcount_cc: 1e+09 iters in 685 msecs for 0.69 nsecs/iter
+    popcount_x86: 1e+09 iters in 685 msecs for 0.69 nsecs/iter
+
+    popcount_rs
+    popcount_naive: 6.25e7 iters in 711 msecs for 11.38 nsecs/iter
+    popcount_8: 2.5e8 iters in 921 msecs for 3.68 nsecs/iter
+    popcount_6: 2.5e8 iters in 914 msecs for 3.66 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1115 msecs for 4.46 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1164 msecs for 4.66 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 912 msecs for 5.47 nsecs/iter
+    popcount_3: 2.5e8 iters in 845 msecs for 3.38 nsecs/iter
+    popcount_4: 2.5e8 iters in 855 msecs for 3.42 nsecs/iter
+    popcount_2: 2.5e8 iters in 886 msecs for 3.54 nsecs/iter
+    popcount_mult: 2.5e8 iters in 166 msecs for 0.66 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 669 msecs for 2.68 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1103 msecs for 4.41 nsecs/iter
+    popcount_rs: 1e9 iters in 671 msecs for 0.67 nsecs/iter
+    popcount_x86: 1e9 iters in 667 msecs for 0.67 nsecs/iter
+
+</blockquote>
+
+Interestingly, the multiply-based popcount benches as fast
+as the `POPCNT` instruction on this hardware! I have a hard
+time believing this — explanations welcome.
+
 Performance on Raspberry Pi 400 as of 2021-03-05. GCC
 10.2.1, Clang 11.0.1-2, rustc 1.52.0-nightly
 2021-03-04. Debian 5.10.0-3-arm64. <blockquote>
-
-    $ sh run-bench.sh
 
     popcount_gcc
     popcount_naive: 6.25e+07 iters in 2652 msecs for 42.43 nsecs/iter
