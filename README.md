@@ -121,6 +121,65 @@ current entry, then older entries in chronological order.
 
 ### Benchmark Results
 
+### 2021-05-28
+
+Got a nice issue report explaining why `popcount_mult` has
+been artificially fast: it was being optimized into a single
+`popcnt` instruction. Worked around that, for now at least.
+It's going to be an ongoing hazard as compilers get better.
+
+Performance on desktop with Ryzen-9 3900X 4.6GHz processor.
+GCC 10.2.1-6, Clang 12.0.1-+rc1, rustc 1.54.0-nightly
+2021-05-27. Debian 5.11.0. <blockquote>
+
+    popcount_gcc
+    popcount_naive: 6.25e+07 iters in 788 msecs for 12.61 nsecs/iter
+    popcount_8: 2.5e+08 iters in 921 msecs for 3.68 nsecs/iter
+    popcount_6: 2.5e+08 iters in 954 msecs for 3.82 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1177 msecs for 4.71 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1233 msecs for 4.93 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 823 msecs for 4.94 nsecs/iter
+    popcount_3: 2.5e+08 iters in 876 msecs for 3.50 nsecs/iter
+    popcount_4: 2.5e+08 iters in 851 msecs for 3.40 nsecs/iter
+    popcount_2: 2.5e+08 iters in 899 msecs for 3.60 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 842 msecs for 3.37 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 671 msecs for 2.68 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 1055 msecs for 4.22 nsecs/iter
+    popcount_cc: 1e+09 iters in 676 msecs for 0.68 nsecs/iter
+    popcount_x86: 1e+09 iters in 676 msecs for 0.68 nsecs/iter
+
+    popcount_clang
+    popcount_naive: 6.25e+07 iters in 728 msecs for 11.65 nsecs/iter
+    popcount_8: 2.5e+08 iters in 959 msecs for 3.84 nsecs/iter
+    popcount_6: 2.5e+08 iters in 934 msecs for 3.74 nsecs/iter
+    popcount_hakmem: 2.5e+08 iters in 1144 msecs for 4.58 nsecs/iter
+    popcount_keane: 2.5e+08 iters in 1186 msecs for 4.74 nsecs/iter
+    popcount_anderson: 1.66666e+08 iters in 791 msecs for 4.75 nsecs/iter
+    popcount_3: 2.5e+08 iters in 881 msecs for 3.52 nsecs/iter
+    popcount_4: 2.5e+08 iters in 877 msecs for 3.51 nsecs/iter
+    popcount_2: 2.5e+08 iters in 887 msecs for 3.55 nsecs/iter
+    popcount_mult: 2.5e+08 iters in 831 msecs for 3.32 nsecs/iter
+    popcount_tabular_8: 2.5e+08 iters in 620 msecs for 2.48 nsecs/iter
+    popcount_tabular_16: 2.5e+08 iters in 998 msecs for 3.99 nsecs/iter
+    popcount_cc: 1e+09 iters in 668 msecs for 0.67 nsecs/iter
+    popcount_x86: 1e+09 iters in 667 msecs for 0.67 nsecs/iter
+
+    popcount_rs
+    popcount_naive: 6.25e7 iters in 649 msecs for 10.38 nsecs/iter
+    popcount_8: 2.5e8 iters in 931 msecs for 3.73 nsecs/iter
+    popcount_6: 2.5e8 iters in 954 msecs for 3.82 nsecs/iter
+    popcount_hakmem: 2.5e8 iters in 1176 msecs for 4.70 nsecs/iter
+    popcount_keane: 2.5e8 iters in 1197 msecs for 4.79 nsecs/iter
+    popcount_anderson: 1.66666e8 iters in 918 msecs for 5.51 nsecs/iter
+    popcount_3: 2.5e8 iters in 866 msecs for 3.46 nsecs/iter
+    popcount_4: 2.5e8 iters in 906 msecs for 3.62 nsecs/iter
+    popcount_2: 2.5e8 iters in 942 msecs for 3.77 nsecs/iter
+    popcount_mult: 2.5e8 iters in 872 msecs for 3.49 nsecs/iter
+    popcount_tabular_8: 2.5e8 iters in 704 msecs for 2.82 nsecs/iter
+    popcount_tabular_16: 2.5e8 iters in 1067 msecs for 4.27 nsecs/iter
+    popcount_rs: 1e9 iters in 701 msecs for 0.70 nsecs/iter
+    popcount_x86: 1e9 iters in 704 msecs for 0.70 nsecs/iter
+
 ### 2021-03-05
 
 Performance on desktop with Ryzen-9 3900X 4.6GHz processor,

@@ -226,7 +226,18 @@ popcount_mult(uint32_t x)
     x -= (x >> 1) & m1;   /* put count of each 2 bits into those 2 bits */
     x = (x & m2) + ((x >> 2) & m2);   /* put count of each 4 bits in */
     x = (x + (x >> 4)) & m4;  /* put count of each 8 bits in */
-    return (x * h01) >> 24;  /* returns left 8 bits of x + (x<<8) + ... */
+    /* XXX This inhibits GCC and Clang from optimizing this
+       whole function to a popcnt instruction (at least for
+       now) by ensuring that the multiply is performed.
+
+       This is a very fragile workaround: check the assembly
+       after making any changes, or if the symptom of this
+       function running ridiculously fast re-occurs.
+
+       Thanks much to github.com @camel-cdr for finding this.
+    */
+    int y = (volatile uint32_t) x * h01;
+    return y >> 24;  /* returns left 8 bits of x + (x<<8) + ... */
 }
 DRIVER(mult)
 
