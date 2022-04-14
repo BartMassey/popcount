@@ -3,13 +3,12 @@
 // Please see the file LICENSE in the source
 // distribution of this software for license terms.
 
-#![feature(asm)]
-
 #[macro_use]
 extern crate lazy_static;
 
 use std::env;
 use std::time;
+use std::arch::asm;
 
 const BLOCKSIZE: usize = 1000;
 const PREHEAT_BASE: u32 = 5000;
@@ -265,11 +264,12 @@ fn has_popcnt_x86() -> bool {
     let mut ecx: u32;
     unsafe {
         asm!(
+            "push rbx",
             "cpuid",
+            "pop rbx",
             lateout("ecx") ecx,
             in("eax") eax,
             lateout("eax") _,
-            lateout("ebx") _,
             lateout("edx") _,
             options(preserves_flags),
         );
