@@ -8,7 +8,7 @@ name = "popcount"
 version = "0.0.1"
 authors = [ "Bart Massey <bart@cs.pdx.edu>" ]
 license-file = "LICENSE"
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 name = "popcount_rs"
