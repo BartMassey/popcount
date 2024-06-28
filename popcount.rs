@@ -69,7 +69,7 @@ macro_rules! driver {
             blockf: &$drive,
             divisor: $div
         };
-    }
+    };
 }
 
 // One bit at a time, with early termination.
