@@ -6,12 +6,8 @@
 GCC = gcc -O4
 CLANG = clang -O3
 
-# Replace the machine with yours.  Don't use X86_POPCNT
-# unless you are on a Nehalem or later Intel processor. Some
-# checking will be done on Intel/AMD parts, but things
-# won't even compile (assemble) on non-x86.
-GCCFLAGS = -Wall -march=native -DX86_POPCNT
-CLANGFLAGS = -Wall -march=native -DX86_POPCNT
+GCCFLAGS = -Wall -march=native
+CLANGFLAGS = -Wall -march=native
 
 TARGETS = popcount_gcc popcount_clang popcount_rs
 

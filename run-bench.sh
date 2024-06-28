@@ -8,5 +8,5 @@ for i in popcount_gcc popcount_clang popcount_rs
 do
     echo ""
     echo $i
-    ./$i 1000000
+    ./$i 500000
 done

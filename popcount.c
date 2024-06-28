@@ -7,9 +7,14 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <inttypes.h>
 #include <sys/time.h>
 #include <time.h>
+
+#if defined(__x86_64__) || defined(__i386__)
+#define X86_POPCNT
+#endif
 
 /* A block of random values for popcount to
    repeatedly operate on. */
@@ -428,7 +433,6 @@ init_popcount_tables(void) {
 
 int
 main(int argc, char **argv) {
-    extern long atoi();
     int n = atoi(argv[1]);
     struct drivers *d;
 
