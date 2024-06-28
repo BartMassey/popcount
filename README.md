@@ -63,7 +63,7 @@ will spit out some explanatory numbers.
   have a popcount instruction (most modern ones finally do),
   and this will use it if present.  C code will be portable
   only to GCC-compatible C compilers. Rust code will
-  currently only get a speedup when compiled with
+  currently only get a speedup on x86 when compiled with
   `--cpu-type native`. All compilers bench reasonably fast
   on my box without a popcount instruction available; looks
   like they are using `popcount_2` or similar, but
@@ -120,6 +120,120 @@ This is a log of work on the project.  Most recent numbers,
 current entry, then older entries in chronological order.
 
 ### Benchmark Results
+
+### 2024-06-27
+
+Got some more self-measured results on a non-x86 machine.
+Note that the checksum differs from the x86 one, so that
+will need to be investigated.
+
+The problems with preventing optimization of `popcount_mult`
+into a popcount instruction continue. Need a better plan
+here.
+
+Performance on desktop with Ryzen-9 3900X 4.6GHz processor.
+GCC 13.2.0-25, Clang 16.0.6, rustc 1.79.0, Debian
+Bookwork/Trixie/sid. <blockquote>
+
+    popcount_naive: 3.125e+07 iters in 356 msecs for 11.39 nsecs/iter
+    popcount_8: 1.25e+08 iters in 468 msecs for 3.74 nsecs/iter
+    popcount_6: 1.25e+08 iters in 492 msecs for 3.94 nsecs/iter
+    popcount_hakmem: 1.25e+08 iters in 612 msecs for 4.90 nsecs/iter
+    popcount_keane: 1.25e+08 iters in 637 msecs for 5.10 nsecs/iter
+    popcount_anderson: 8.3333e+07 iters in 425 msecs for 5.10 nsecs/iter
+    popcount_3: 1.25e+08 iters in 453 msecs for 3.62 nsecs/iter
+    popcount_4: 1.25e+08 iters in 446 msecs for 3.57 nsecs/iter
+    popcount_2: 1.25e+08 iters in 463 msecs for 3.70 nsecs/iter
+    popcount_mult: 1.25e+08 iters in 437 msecs for 3.50 nsecs/iter
+    popcount_tabular_8: 1.25e+08 iters in 350 msecs for 2.80 nsecs/iter
+    popcount_tabular_16: 1.25e+08 iters in 553 msecs for 4.42 nsecs/iter
+    popcount_cc: 5e+08 iters in 352 msecs for 0.70 nsecs/iter
+    popcount_x86: 5e+08 iters in 353 msecs for 0.71 nsecs/iter
+
+    popcount_clang
+    popcount_naive: 3.125e+07 iters in 442 msecs for 14.14 nsecs/iter
+    popcount_8: 1.25e+08 iters in 639 msecs for 5.11 nsecs/iter
+    popcount_6: 1.25e+08 iters in 696 msecs for 5.57 nsecs/iter
+    popcount_hakmem: 1.25e+08 iters in 530 msecs for 4.24 nsecs/iter
+    popcount_keane: 1.25e+08 iters in 588 msecs for 4.70 nsecs/iter
+    popcount_anderson: 8.3333e+07 iters in 391 msecs for 4.69 nsecs/iter
+    popcount_3: 1.25e+08 iters in 421 msecs for 3.37 nsecs/iter
+    popcount_4: 1.25e+08 iters in 431 msecs for 3.45 nsecs/iter
+    popcount_2: 1.25e+08 iters in 443 msecs for 3.54 nsecs/iter
+    popcount_mult: 1.25e+08 iters in 417 msecs for 3.34 nsecs/iter
+    popcount_tabular_8: 1.25e+08 iters in 308 msecs for 2.46 nsecs/iter
+    popcount_tabular_16: 1.25e+08 iters in 495 msecs for 3.96 nsecs/iter
+    popcount_cc: 5e+08 iters in 332 msecs for 0.66 nsecs/iter
+    popcount_x86: 5e+08 iters in 332 msecs for 0.66 nsecs/iter
+
+    popcount_rs
+    popcount_naive: 3.125e7 iters in 574 msecs for 18.36 nsecs/iter
+    popcount_8: 1.25e8 iters in 669 msecs for 5.35 nsecs/iter
+    popcount_6: 1.25e8 iters in 729 msecs for 5.83 nsecs/iter
+    popcount_hakmem: 1.25e8 iters in 561 msecs for 4.49 nsecs/iter
+    popcount_keane: 1.25e8 iters in 620 msecs for 4.96 nsecs/iter
+    popcount_anderson: 8.3333e7 iters in 356 msecs for 4.28 nsecs/iter
+    popcount_3: 1.25e8 iters in 446 msecs for 3.57 nsecs/iter
+    popcount_4: 1.25e8 iters in 448 msecs for 3.59 nsecs/iter
+    popcount_2: 1.25e8 iters in 469 msecs for 3.75 nsecs/iter
+    popcount_mult: 1.25e8 iters in 88 msecs for 0.70 nsecs/iter
+    popcount_tabular_8: 1.25e8 iters in 360 msecs for 2.88 nsecs/iter
+    popcount_tabular_16: 1.25e8 iters in 547 msecs for 4.38 nsecs/iter
+    popcount_rs: 5e8 iters in 352 msecs for 0.70 nsecs/iter
+    popcount_x86: 5e8 iters in 352 msecs for 0.70 nsecs/iter
+
+</blockquote>
+
+Performance on Orange Pi Zero 3 1GB with Allwinner H618 1GHz processor.
+GCC 13.3.0-1, Clang 16.0.6, rustc 1.79.0, Debian
+Bookworm/Trixie. <blockquote>
+
+popcount_gcc
+popcount_naive: 3.125e+07 iters in 1680 msecs for 53.76 nsecs/iter
+popcount_8: 1.25e+08 iters in 1574 msecs for 12.59 nsecs/iter
+popcount_6: 1.25e+08 iters in 1492 msecs for 11.94 nsecs/iter
+popcount_hakmem: 1.25e+08 iters in 1989 msecs for 15.91 nsecs/iter
+popcount_keane: 1.25e+08 iters in 1823 msecs for 14.58 nsecs/iter
+popcount_anderson: 8.3333e+07 iters in 1215 msecs for 14.58 nsecs/iter
+popcount_3: 1.25e+08 iters in 1574 msecs for 12.59 nsecs/iter
+popcount_4: 1.25e+08 iters in 1491 msecs for 11.93 nsecs/iter
+popcount_2: 1.25e+08 iters in 1574 msecs for 12.59 nsecs/iter
+popcount_mult: 1.25e+08 iters in 1491 msecs for 11.93 nsecs/iter
+popcount_tabular_8: 1.25e+08 iters in 1160 msecs for 9.28 nsecs/iter
+popcount_tabular_16: 1.25e+08 iters in 2589 msecs for 20.71 nsecs/iter
+popcount_cc: 5e+08 iters in 3647 msecs for 7.29 nsecs/iter
+
+popcount_clang
+popcount_naive: 3.125e+07 iters in 2936 msecs for 93.95 nsecs/iter
+popcount_8: 1.25e+08 iters in 1822 msecs for 14.58 nsecs/iter
+popcount_6: 1.25e+08 iters in 1905 msecs for 15.24 nsecs/iter
+popcount_hakmem: 1.25e+08 iters in 1905 msecs for 15.24 nsecs/iter
+popcount_keane: 1.25e+08 iters in 1905 msecs for 15.24 nsecs/iter
+popcount_anderson: 8.3333e+07 iters in 1270 msecs for 15.24 nsecs/iter
+popcount_3: 1.25e+08 iters in 1491 msecs for 11.93 nsecs/iter
+popcount_4: 1.25e+08 iters in 1491 msecs for 11.93 nsecs/iter
+popcount_2: 1.25e+08 iters in 1574 msecs for 12.59 nsecs/iter
+popcount_mult: 1.25e+08 iters in 1491 msecs for 11.93 nsecs/iter
+popcount_tabular_8: 1.25e+08 iters in 1077 msecs for 8.62 nsecs/iter
+popcount_tabular_16: 1.25e+08 iters in 2505 msecs for 20.04 nsecs/iter
+popcount_cc: 5e+08 iters in 3647 msecs for 7.29 nsecs/iter
+
+popcount_rs
+popcount_naive: 3.125e7 iters in 2411 msecs for 77.14 nsecs/iter
+popcount_8: 1.25e8 iters in 1822 msecs for 14.58 nsecs/iter
+popcount_6: 1.25e8 iters in 1905 msecs for 15.24 nsecs/iter
+popcount_hakmem: 1.25e8 iters in 1789 msecs for 14.31 nsecs/iter
+popcount_keane: 1.25e8 iters in 1839 msecs for 14.71 nsecs/iter
+popcount_anderson: 8.3333e7 iters in 1667 msecs for 20.01 nsecs/iter
+popcount_3: 1.25e8 iters in 1342 msecs for 10.74 nsecs/iter
+popcount_4: 1.25e8 iters in 1342 msecs for 10.74 nsecs/iter
+popcount_2: 1.25e8 iters in 1425 msecs for 11.40 nsecs/iter
+popcount_mult: 1.25e8 iters in 852 msecs for 6.82 nsecs/iter
+popcount_tabular_8: 1.25e8 iters in 4968 msecs for 39.75 nsecs/iter
+popcount_tabular_16: 1.25e8 iters in 4805 msecs for 38.44 nsecs/iter
+popcount_rs: 5e8 iters in 3408 msecs for 6.82 nsecs/iter
+
+</blockquote>
 
 ### 2021-05-28
 
@@ -179,6 +293,8 @@ GCC 10.2.1-6, Clang 12.0.1-+rc1, rustc 1.54.0-nightly
     popcount_tabular_16: 2.5e8 iters in 1067 msecs for 4.27 nsecs/iter
     popcount_rs: 1e9 iters in 701 msecs for 0.70 nsecs/iter
     popcount_x86: 1e9 iters in 704 msecs for 0.70 nsecs/iter
+
+</blockquote>
 
 ### 2021-03-05
 
