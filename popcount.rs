@@ -297,7 +297,7 @@ fn popcount_x86(n: u32) -> u32 {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 driver!(drive_x86, popcount_x86, DRIVER_X86, 1);
 
-// Rust native: can get a popcnt insn, but only via RUSTFLAGS.
+// Rust native: can get a popcnt insn, but only via -march=native
 // See https://users.rust-lang.org/t/4923/3 and the Makefile.
 #[inline(always)]
 fn popcount_rs(n: u32) -> u32 {

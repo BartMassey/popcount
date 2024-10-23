@@ -862,10 +862,10 @@ popcnt.
 
 The native Rust `u32::count_ones()` method is not compiled
 into a native `popcnt` instruction in current incarnations
-unless you play games with `RUSTFLAGS`. `count_ones()` is
-about the same speed as all the other fast popcounts,
-though, so it's probably the right thing if you don't need
-the machine instruction's speed.
+unless you tell `rustc` you have a new enough processor (for
+example, using `RUSTFLAGS=-march=native`). Otherwise,
+`count_ones()` is about the same speed as all the other fast
+popcounts, so it's probably always the right thing to use.
 
 Current C numbers, GCC 7.2.0 on my Haswell box described
 above:
