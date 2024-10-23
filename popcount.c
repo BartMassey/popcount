@@ -130,8 +130,7 @@ DRIVER(hakmem)
 
 
 /* Joe Keane, sci.math.num-analysis, 9 July 1995,
-   as cited by an addendum to Hacker's Delight.
-   http://www.hackersdelight.org/divcMore.pdf */
+   as given in Hacker's Delight (2nd ed) Figure 10-39. */
 static inline uint32_t
 remu63(uint32_t n) {
     uint32_t t = (((n >> 12) + n) >> 10) + (n << 2);

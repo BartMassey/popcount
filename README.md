@@ -22,7 +22,7 @@ were:
   * Should be comprehensible / maintainable.
 
 X has always used the venerable
-[HAKMEM 169](http://www.inwap.com/pdp10/hbaker/hakmem/hacks.html#item169)
+[HAKMEM 169](http://www.hakmem.org/#item169)
 algorithm, but this didn't seem very good for the above
 criteria.  [Keith Packard](http://keithp.com), who inserted
 the HAKMEM code, tells me he selected it mainly because it
@@ -32,11 +32,12 @@ looking for an algorithm.
 I wrote this code to benchmark some tries at a replacement.
 The Wikipedia <a
 href="http://en.wikipedia.org/wiki/Hamming_weight">page</a>
-was a fairly good starting point.  This
-[bonus material](http://www.hackersdelight.org/divcMore.pdf)
-from *Hacker's Delight* was a useful reference. I'd lost my
-copy of the book, but I've now replaced it and I can say
-that there's nothing better in there (as of the second
+was a fairly good starting point.
+
+[*Hacker's Delight*](http://www.oreilly.com/library/view/hackers-delight-second/9780133084993/)
+was a useful reference. I'd lost my copy of the book, but
+I've now replaced it and I can say that there's nothing
+better in there than the stuff in here (as of the second
 edition), which is a pretty strong statement.
 
 I think my code is also a reasonable tutorial for

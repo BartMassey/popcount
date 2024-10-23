@@ -126,8 +126,7 @@ fn popcount_hakmem(n: u32) -> u32 {
 driver!(drive_hakmem, popcount_hakmem, DRIVER_HAKMEM, 4);
 
 // Joe Keane, sci.math.num-analysis, 9 July 1995,
-// as cited by an addendum to Hacker's Delight.
-// http://www.hackersdelight.org/divcMore.pdf
+// as given in Hacker's Delight (2nd ed) Figure 10-39.
 #[inline(always)]
 fn remu63(n: u32) -> u32 {
     let t = (((n >> 12) + n) >> 10) + (n << 2);
