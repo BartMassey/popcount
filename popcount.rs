@@ -213,22 +213,8 @@ fn popcount_mult(mut n: u32) -> u32 {
     // put count of each 8 bits in
     n = (n + (n >> 4)) & m4;
 
-    /* XXX This inhibits LLVM from optimizing this whole function to a
-       popcnt instruction (at least for now) by ensuring that the
-       multiply is performed.
-
-       This is a very fragile workaround: check the assembly after
-       making any changes, or if the symptom of this function running
-       ridiculously fast re-occurs.
-
-       This workaround also may cause this function to be slightly slower,
-       since it is now performing a 64-bit multiply instead of 32-bit (the
-       additional `&& 0xff` seems to be optimized away). A better
-       workaround is welcome.
-
-       Thanks much to github.com @camel-cdr for finding this.
-    */
-    let result = ((n as u64 * h01 as u64) >> 24) & 0xff;
+    let m = std::hint::black_box(n * h01);
+    let result = (m >> 24) & 0xff;
     result as u32
 }
 driver!(drive_mult, popcount_mult, DRIVER_MULT, 4);
